@@ -1,4 +1,3 @@
-// server.mjs
 import "@shopify/shopify-app-remix/adapters/node";
 import {
   AppDistribution,
@@ -16,8 +15,13 @@ import * as remixBuild from "@remix-run/dev/server-build";
 
 import session from "express-session";
 import { loadSession } from "./server/middleware/loadSession.js";
-import { authorize, oauthCallback } from "./server/middleware/oauthMiddleware.js";
+import {
+  authorize,
+  oauthCallback,
+} from "./server/middleware/oauthMiddleware.js";
 import cookieParser from "cookie-parser";
+import webhooksRoutes from "./webhooksRoutes/webhooksRoutes.js";
+
 import cors from "cors";
 
 const shopify = shopifyApp({
@@ -52,33 +56,32 @@ const shopify = shopifyApp({
 
 const app = express();
 app.use(cookieParser());
-app.use(
-  cors({
-    origin: "https://admin.shopify.com",
-    credentials: true,
-  })
-);
+// app.use(
+//   cors({
+//     origin: "https://admin.shopify.com",
+//     credentials: true,
+//   })
+// );
 app.use(express.static("public"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Middleware for express-session
-app.use(
-  session({
-    secret: process.env.SESSION_COOKIE_KEY,
-    resave: false,
-    saveUninitialized: true,
-  })
-);
-
+// app.use(
+//   session({
+//     secret: process.env.SESSION_COOKIE_KEY,
+//     resave: false,
+//     saveUninitialized: true,
+//   })
+// );
 
 // Oauth
-app.get("/api/auth", authorize);
-app.get("/api/auth/callback", oauthCallback);
+// app.get("/api/auth", authorize);
+// app.get("/api/auth/callback", oauthCallback);
 
 // load app session
-app.use(loadSession);
-
+// app.use(loadSession);
+app.use("/api", webhooksRoutes);
 
 app.get("/", (req, res) => {
   const shop = req.query.shop || req.cookies.shop;
