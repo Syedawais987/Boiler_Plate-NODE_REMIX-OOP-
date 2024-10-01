@@ -24,36 +24,41 @@ import webhooksRoutes from "./webhooksRoutes/webhooksRoutes.js";
 
 import cors from "cors";
 
-const shopify = shopifyApp({
-  apiKey: process.env.SHOPIFY_API_KEY,
-  apiSecretKey: process.env.SHOPIFY_API_SECRET || "",
-  apiVersion: process.env.API_VERSION || LATEST_API_VERSION,
-  scopes: process.env.SCOPES?.split(","),
-  appUrl: process.env.SHOPIFY_APP_URL || "",
-  authPathPrefix: "/auth",
-  sessionStorage: new PrismaSessionStorage(prisma),
-  distribution: AppDistribution.AppStore,
-  restResources,
-  webhooks: {
-    APP_UNINSTALLED: {
-      deliveryMethod: DeliveryMethod.Http,
-      callbackUrl: "/webhooks",
+let shopify;
+if (process.env.SHOPIFY_API_KEY && process.env.SHOPIFY_API_SECRET) {
+  shopify = shopifyApp({
+    apiKey: process.env.SHOPIFY_API_KEY,
+    apiSecretKey: process.env.SHOPIFY_API_SECRET || "",
+    apiVersion: process.env.API_VERSION || LATEST_API_VERSION,
+    scopes: process.env.SCOPES?.split(","),
+    appUrl: process.env.SHOPIFY_APP_URL || "",
+    authPathPrefix: "/auth",
+    sessionStorage: new PrismaSessionStorage(prisma),
+    distribution: AppDistribution.AppStore,
+    restResources,
+    webhooks: {
+      APP_UNINSTALLED: {
+        deliveryMethod: DeliveryMethod.Http,
+        callbackUrl: "/webhooks",
+      },
     },
-  },
-  hooks: {
-    afterAuth: async ({ session }) => {
-      shopify.registerWebhooks({ session });
+    hooks: {
+      afterAuth: async ({ session }) => {
+        shopify.registerWebhooks({ session });
+      },
     },
-  },
-  future: {
-    v3_webhookAdminContext: true,
-    v3_authenticatePublic: true,
-  },
-  ...(process.env.SHOP_CUSTOM_DOMAIN
-    ? { customShopDomains: [process.env.SHOP_CUSTOM_DOMAIN] }
-    : {}),
-});
-
+    future: {
+      v3_webhookAdminContext: true,
+      v3_authenticatePublic: true,
+    },
+    ...(process.env.SHOP_CUSTOM_DOMAIN
+      ? { customShopDomains: [process.env.SHOP_CUSTOM_DOMAIN] }
+      : {}),
+  });
+  console.log("Shopify app initialized successfully:");
+} else {
+  console.log("Shopify app initialization failed: Missing API Key or Secret.");
+}
 const app = express();
 app.use(cookieParser());
 // app.use(
@@ -63,7 +68,14 @@ app.use(cookieParser());
 //   })
 // );
 app.use(express.static("public"));
-app.use(express.json());
+// app.use(express.json());
+app.use(
+  express.json({
+    verify: (req, res, buf) => {
+      req.rawBody = buf.toString();
+    },
+  })
+);
 app.use(express.urlencoded({ extended: true }));
 
 // Middleware for express-session
@@ -104,3 +116,6 @@ export const unauthenticated = shopify.unauthenticated;
 export const login = shopify.login;
 export const registerWebhooks = shopify.registerWebhooks;
 export const sessionStorage = shopify.sessionStorage;
+if (typeof globalThis !== "undefined") {
+  globalThis.shopify = shopify;
+}

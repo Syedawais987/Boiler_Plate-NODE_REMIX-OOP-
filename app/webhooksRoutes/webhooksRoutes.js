@@ -1,41 +1,33 @@
 import express from "express";
 import { verifyWooWebhook } from "../server/middleware/webhook.js";
-const router = express.Router();
 import {
   handleProductCreated,
-  handleProductUpdated,
-  handleProductDeleted,
-  handleProductRestored,
+  // handleProductUpdated,
 } from "../controllers/webhook_controller.js";
 
+const router = express.Router();
+
 router.post("/webhook", verifyWooWebhook, async (req, res) => {
-  console.log("Headers:", req.headers);
-  console.log("Body:", req.body);
-  console.log("Received WooCommerce webhook payload:", req.body);
-  console.log("Raw Body:", JSON.stringify(req.body));
+  // console.log("Headers:", req.headers);
+  // console.log("Body:", req.body);
+  const rawBody = req.rawBody;
+
+  // console.log("Raw Body:", rawBody);
   const eventType = req.headers["x-wc-webhook-topic"];
 
-  const { payload, topic } = req.body;
+  const payload = JSON.parse(rawBody);
+  console.log("Payload ", payload);
 
   console.log(`Received WooCommerce event: ${eventType}`);
 
   switch (eventType) {
     case "product.created":
       await handleProductCreated(payload);
-      console.log("Handling product.created event");
       break;
-    case "product.updated":
-      await handleProductUpdated(payload);
-      console.log("Handling product.updated event");
-      break;
-    case "product.deleted":
-      await handleProductDeleted(payload);
-      console.log("Handling product.deleted event");
-      break;
-    case "product.restored":
-      await handleProductRestored(payload);
-      console.log("Handling product.restored event");
-      break;
+    // case "product.updated":
+    //   await handleProductUpdated(payload);
+    //   break;
+
     default:
       console.log("Unhandled WooCommerce event type:", eventType);
   }

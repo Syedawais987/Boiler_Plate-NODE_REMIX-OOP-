@@ -3,7 +3,7 @@
 client_id = "16132b6701eebe7d5f0dbf74043f3dbe"
 name = "EA"
 handle = "ea-1"
-application_url = "https://cc59-115-186-141-30.ngrok-free.app"
+application_url = "https://2583-115-186-169-70.ngrok-free.app"
 embedded = true
 
 [build]
@@ -14,13 +14,13 @@ include_config_on_deploy = true
 
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
-scopes = "write_products,read_products,read_inventory,write_customers,read_customers"
+scopes = "write_products,read_products,read_orders,write_orders"
 
 [auth]
 redirect_urls = [
-  "https://cc59-115-186-141-30.ngrok-free.app/auth/callback",
-  "https://cc59-115-186-141-30.ngrok-free.app/auth/shopify/callback",
-  "https://cc59-115-186-141-30.ngrok-free.app/api/auth/callback"
+  "https://2583-115-186-169-70.ngrok-free.app/auth/callback",
+  "https://2583-115-186-169-70.ngrok-free.app/auth/shopify/callback",
+  "https://2583-115-186-169-70.ngrok-free.app/api/auth/callback"
 ]
 
 [webhooks]
