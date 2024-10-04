@@ -1,22 +1,12 @@
-// product.mutation.js
-
 export const productCreate = `#graphql
 mutation productCreate($input: ProductInput!) {
   productCreate(input: $input) {
     product {
       id
       title
-      bodyHtml
+     descriptionHtml
       productType
-      variants(first: 25) {
-        edges {
-          node {
-            sku
-            price
-            compareAtPrice
-          }
-        }
-      }
+      
       metafields(first: 50) {
         edges {
           node {
@@ -73,4 +63,73 @@ mutation MetafieldsSet($metafields: [MetafieldsSetInput!]!) {
     }
   }
 }
+`;
+export const productVariantsBulkCreate = `#graphql
+mutation productVariantsBulkCreate($productId: ID!, $variants: [ProductVariantsBulkInput!]!) {
+  productVariantsBulkCreate(productId: $productId, variants: $variants) {
+    userErrors {
+      field
+      message
+    }
+    product {
+      id
+      options {
+        id
+        name
+        values
+        position
+        optionValues {
+          id
+          name
+          hasVariants
+        }
+      }
+    }
+    productVariants {
+      id
+      title
+      selectedOptions {
+        name
+        value
+      }
+    }
+  }
+}
+
+
+`;
+
+export const productUpdateWithMedia = `#graphql
+mutation UpdateProductWithNewMedia($input: ProductInput!, $media: [CreateMediaInput!]) {
+  productUpdate(input: $input, media: $media) {
+    product {
+      id
+      title
+      media(first: 10) {
+        nodes {
+          alt
+          mediaContentType
+          preview {
+            status
+          }
+        }
+      }
+    }
+    userErrors {
+      field
+      message
+    }
+  }
+}
+`;
+export const productDelete = `
+  mutation productDelete($input: ProductDeleteInput!) {
+    productDelete(input: $input) {
+      deletedProductId
+      userErrors {
+        field
+        message
+      }
+    }
+  }
 `;

@@ -55,7 +55,7 @@ if (process.env.SHOPIFY_API_KEY && process.env.SHOPIFY_API_SECRET) {
       ? { customShopDomains: [process.env.SHOP_CUSTOM_DOMAIN] }
       : {}),
   });
-  console.log("Shopify app initialized successfully:");
+  // console.log("Shopify app initialized successfully:");
 } else {
   console.log("Shopify app initialization failed: Missing API Key or Secret.");
 }

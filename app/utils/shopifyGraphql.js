@@ -5,7 +5,7 @@ export async function shopify_graphql({ session, query, variables = null }) {
     throw new Error("Session or query argument missing");
   }
 
-  const url = `https://${session.shop}/admin/api/2023-04/graphql.json`;
+  const url = `https://${session.shop}/admin/api/2024-10/graphql.json`;
 
   const options = {
     method: "POST",
