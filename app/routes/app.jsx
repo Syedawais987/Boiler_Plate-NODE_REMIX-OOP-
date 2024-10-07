@@ -3,17 +3,14 @@ import { Link, Outlet, useLoaderData, useRouteError } from "@remix-run/react";
 import polarisStyles from "@shopify/polaris/build/esm/styles.css";
 import { boundary } from "@shopify/shopify-app-remix/server";
 import { AppProvider } from "@shopify/shopify-app-remix/react";
-import translations from '@shopify/polaris/locales/en.json';
+import translations from "@shopify/polaris/locales/en.json";
 import { NavMenu } from "@shopify/app-bridge-react";
-import cookie from 'cookie';
+import cookie from "cookie";
 
+export const links = () => [{ rel: "stylesheet", href: polarisStyles }];
 
-export const links = () => [
-  { rel: "stylesheet", href: polarisStyles },
-];
-
-export const loader = async ({request}) => {
-  const cookies = cookie.parse(request.headers.get('Cookie') || '');
+export const loader = async ({ request }) => {
+  const cookies = cookie.parse(request.headers.get("Cookie") || "");
   const shop = cookies.shop;
 
   return json({ apiKey: process.env.SHOPIFY_API_KEY || "", shop });
@@ -29,15 +26,14 @@ export default function App() {
   };
 
   return (
-    <AppProvider isEmbeddedApp apiKey={apiKey} i18n={translations} config={appBridgeConfig}>
+    <AppProvider
+      isEmbeddedApp
+      apiKey={apiKey}
+      i18n={translations}
+      config={appBridgeConfig}
+    >
       <NavMenu>
-        <Link to="/app">Dashboard</Link>
-        <Link to="/app/quotes">Quotes</Link>
-        <Link to="/app/customers">Customers</Link>
-        <Link to="/app/commissions">Commissions</Link>
-        <Link to="/app/orders">Orders</Link>
-        <Link to="/app/spaces">Spaces</Link>
-        <Link to="/app/settings">Settings</Link>
+        <Link to="/app">Home</Link>
       </NavMenu>
       <Outlet />
     </AppProvider>

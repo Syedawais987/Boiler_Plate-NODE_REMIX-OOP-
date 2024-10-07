@@ -1,13 +1,7 @@
 import prisma from "../../db.server.js";
 import { shopify_graphql } from "../utils/shopifyGraphql.js";
 import { fetchCart } from "../graphql/cart.muatation.js";
-import WooCommerceRestApi from "@woocommerce/woocommerce-rest-api";
-// const WooCommerce = new WooCommerceRestApi({
-//   url: "https://boydm.sg-host.com",
-//   consumerKey: "ck_1b76bdbca32b2648a6a26bc716ad347a6ea7d429",
-//   consumerSecret: "cs_5b83031973b1b6abded402a6d4b934674134adbd",
-//   version: "wc/v3",
-// });
+import WooCommerce from "../init.js";
 
 export const checkout = async (req, res) => {
   const session = req.shop.session;

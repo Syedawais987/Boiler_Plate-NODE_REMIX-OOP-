@@ -14,7 +14,12 @@ const getSessionFromDB = async (shop) => {
   const session = await prisma.session.findFirst({ where: { shop } });
   return session;
 };
-
+const checkIfProductExists = async (wooCommerceId) => {
+  const existingProduct = await prisma.productMapping.findUnique({
+    where: { wooCommerceId: wooCommerceId.toString() },
+  });
+  return existingProduct !== null;
+};
 export const handleProductCreated = async (payload) => {
   if (!payload) {
     console.error("Payload is undefined");
@@ -28,6 +33,13 @@ export const handleProductCreated = async (payload) => {
     if (!session) {
       console.log("No session");
       throw new Error("No session found for the shop.");
+    }
+    const productExists = await checkIfProductExists(payload.id);
+    if (productExists) {
+      console.log(
+        `Product with WooCommerce ID ${payload.id} already exists in Shopify. Skipping creation.`
+      );
+      return { success: false, message: "Product already exists in Shopify" };
     }
 
     const productVariables = {
@@ -304,6 +316,16 @@ export const handleProductDeleted = async (payload) => {
     console.log(
       "Product deleted in Shopify:",
       productResponse.data.productDelete.deletedProductId
+    );
+    await prisma.productMapping.delete({
+      where: {
+        wooCommerceId: String(payload.id),
+      },
+    });
+
+    console.log(
+      "Product mapping deleted from the database for WooCommerce ID:",
+      payload.id
     );
 
     return {
