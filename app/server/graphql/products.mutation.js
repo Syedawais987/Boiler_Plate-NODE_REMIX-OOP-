@@ -133,3 +133,53 @@ export const productDelete = `
     }
   }
 `;
+
+export const fetchActiveProducts = `#graphql
+query {
+  products(first: 100, query: "published_status:published") {
+    edges {
+      node {
+        id
+        title
+        description
+        tags # Retrieve tags to map them to WooCommerce categories
+        vendor # Fetch vendor as a potential brand
+        productType # Fetch product type for categorization
+        priceRange {
+          minVariantPrice {
+            amount
+          }
+        }
+        images(first: 5) { # Retrieve more images
+          edges {
+            node {
+              url
+            }
+          }
+        }
+        variants(first: 100) {
+          edges {
+            node {
+              id
+              sku
+              presentmentPrices(first: 1) {
+                edges {
+                  node {
+                    price {
+                      amount
+                    }
+                  }
+                }
+              }
+              selectedOptions {
+                name
+                value
+              }
+            }
+          }
+        }
+        publishedAt
+      }
+    }
+  }
+}`;

@@ -1,5 +1,5 @@
 import express from "express";
-import { verifyWooWebhook } from "../server/middleware/webhook.js";
+import { verifyWooWebhook } from "../middleware/webhook.js";
 import {
   handleProductCreated,
   handleProductUpdated,

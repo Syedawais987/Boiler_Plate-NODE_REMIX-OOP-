@@ -20,7 +20,9 @@ import {
   oauthCallback,
 } from "./server/middleware/oauthMiddleware.js";
 import cookieParser from "cookie-parser";
-import webhooksRoutes from "./webhooksRoutes/webhooksRoutes.js";
+import webhooksRoutes from "./server/routes/webhooksRoutes.js";
+import apiRoutes from "./server/routes/apiRoutes.js";
+import proxyApiRoutes from "./server/routes/proxyApiRoutes.js";
 
 import cors from "cors";
 
@@ -92,8 +94,10 @@ app.use(express.urlencoded({ extended: true }));
 // app.get("/api/auth/callback", oauthCallback);
 
 // load app session
-// app.use(loadSession);
+app.use(loadSession);
 app.use("/api", webhooksRoutes);
+app.use("/api/app", apiRoutes);
+app.use("/proxy/api", proxyApiRoutes);
 
 app.get("/", (req, res) => {
   const shop = req.query.shop || req.cookies.shop;

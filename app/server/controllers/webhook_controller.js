@@ -1,4 +1,4 @@
-import prisma from "../db.server.js";
+import prisma from "../../db.server.js";
 import { shopify_graphql } from "../utils/shopifyGraphql";
 import {
   productCreate,
