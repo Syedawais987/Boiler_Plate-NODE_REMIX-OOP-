@@ -1,29 +1,33 @@
 import prisma from "../../db.server.js";
-import { shopify_graphql } from "../utils/shopifyGraphql.js";
-import { fetchCart } from "../graphql/cart.muatation.js";
+// import { shopify_graphql } from "../utils/shopifyGraphql.js";
+// import { fetchCart } from "../graphql/cart.muatation.js";
 import WooCommerce from "../init.js";
 
 export const checkout = async (req, res) => {
-  const session = req.shop.session;
-  const cartId = req.body.cartId;
+  // const session = req.shop.session;
+  // const cartId = req.body.cartId;
 
   try {
-    const cartResponse = await shopify_graphql({
-      session,
-      query: fetchCart,
-      variables: { cartId },
-    });
+    // const cartResponse = await shopify_graphql({
+    //   session,
+    //   query: fetchCart,
+    //   variables: { cartId },
+    // });
 
-    console.log("cart query response", cartResponse);
-    if (cartResponse.errors) {
-      return res.status(400).json({ errors: cartResponse.errors });
-    }
+    // console.log("cart query response", cartResponse);
+    // if (cartResponse.errors) {
+    //   return res.status(400).json({ errors: cartResponse.errors });
+    // }
 
-    const shopifyCart = cartResponse.data.cart;
-    const cartItems = shopifyCart.lines.edges.map((edge) => ({
-      shopifyProductId: edge.node.merchandise.product.id,
-      quantity: edge.node.quantity,
-    }));
+    // const shopifyCart = cartResponse.data.cart;
+    // const cartItems = shopifyCart.lines.edges.map((edge) => ({
+    //   shopifyProductId: edge.node.merchandise.product.id,
+    //   quantity: edge.node.quantity,
+    // }));
+
+    const cartItems = [
+      { shopifyProductId: "gid://shopify/Product/7657475801169", quantity: 1 },
+    ];
 
     const wooCommerceItems = [];
     for (const item of cartItems) {
@@ -49,31 +53,30 @@ export const checkout = async (req, res) => {
         .json({ message: "No matching products found in WooCommerce" });
     }
 
-    // const orderData = {
-    //   payment_method: "bacs",
-    //   payment_method_title: "Bank Transfer",
-    //   set_paid: false,
-    //   billing: {
-    //     email: shopifyCart.buyerIdentity.email,
-    //   },
-    //   line_items: wooCommerceItems,
-    // };
+    const orderData = {
+      payment_method: "dfin",
+      payment_method_title: "DFIN Payment",
+      set_paid: false,
+      billing: {
+        email: "syedawaishussain987@gmail.com",
+      },
+      line_items: wooCommerceItems,
+    };
 
-    // const wooOrderResponse = await WooCommerce.post("orders", orderData);
-    // const wooOrderId = wooOrderResponse.data.id;
-    // const paymentLink = wooOrderResponse.data.payment_url;
+    const wooOrderResponse = await WooCommerce.post("orders", orderData);
+    const wooOrderId = wooOrderResponse.data.id;
+    const paymentLink = wooOrderResponse.data.payment_url;
 
     // await prisma.orderMapping.create({
     //   data: {
-    //     wooCommerceOrderId: wooOrderId.toString(),
-    //     shopifyCartId: cartId.toString(),
+    //     woocommerceOrderId: String(payload.id),
+    //     shopifyOrderId: .id,
     //   },
     // });
 
-    // console.log("WooCommerce checkout created:", wooOrderResponse.data);
+    console.log("WooCommerce checkout created:", wooOrderResponse.data);
 
-    // return res.status(200).json({ paymentLink });
-    return res.status(200).message("Fetched cart details", cartResponse.data);
+    return res.status(200).json({ paymentLink });
   } catch (error) {
     console.error("Error creating WooCommerce checkout:", error);
     return res.status(500).json({ error: "Internal Server Error" });

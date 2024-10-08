@@ -24,3 +24,17 @@ export const verifyWooWebhook = async (req, res, next) => {
   }
   next();
 };
+
+export const verifyShopifyWebhook = (req, res, next) => {
+  const hmacHeader = req.get("X-Shopify-Hmac-Sha256");
+  const generatedHash = crypto
+    .createHmac("sha256", process.env.SHOPIFY_API_SECRET)
+    .update(req.rawBody, "utf8")
+    .digest("base64");
+
+  if (generatedHash === hmacHeader) {
+    return next();
+  } else {
+    return res.status(401).send("Shopify Webhook Signature Mismatch");
+  }
+};

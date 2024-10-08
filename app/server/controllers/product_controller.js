@@ -30,7 +30,9 @@ export const productsSync = async (req, res) => {
           id: variant.id,
           sku: variant.sku || "No SKU",
           price:
-            variant.presentmentPrices.edges[0]?.node.price.amount || "No price",
+            (
+              variant.presentmentPrices.edges[0]?.node.price.amount / 100
+            ).toFixed(2) || "No price",
           options: options || "No options",
           weight: variant.weight ? variant.weight.toString() : "0",
         };
@@ -44,7 +46,7 @@ export const productsSync = async (req, res) => {
         id: product.id,
         title: product.title,
         description: product.description,
-        price: product.priceRange.minVariantPrice.amount,
+        price: (product.priceRange.minVariantPrice.amount / 100).toFixed(2),
         sku: variants[0]?.sku || "",
         weight: variants[0]?.weight || "0",
         imageUrl: product.images.edges[0]?.node.url,
@@ -58,8 +60,6 @@ export const productsSync = async (req, res) => {
         variants,
       };
     });
-
-    // console.log("Products data from Shopify", products);
 
     for (let product of products) {
       const existingMapping = await prisma.productMapping.findUnique({
@@ -103,7 +103,6 @@ export const productsSync = async (req, res) => {
         const wooResponse = await WooCommerce.post("products", wooProductData);
         const wooCommerceProductId = wooResponse.data.id;
 
-        // console.log("Response from WooCommerce", wooResponse.data);
         console.log(
           `Product ${product.title} created successfully in WooCommerce`
         );
@@ -126,7 +125,6 @@ export const productsSync = async (req, res) => {
 
     return res.status(200).json({
       message: "Sync completed. ",
-      //   products,
     });
   } catch (error) {
     console.error("Failed to fetch products from Shopify:", error);

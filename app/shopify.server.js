@@ -39,6 +39,10 @@ if (process.env.SHOPIFY_API_KEY && process.env.SHOPIFY_API_SECRET) {
     distribution: AppDistribution.AppStore,
     restResources,
     webhooks: {
+      PRODUCTS_DELETE: {
+        deliveryMethod: DeliveryMethod.Http,
+        callbackUrl: "/proxy/api/webhook/product/delete",
+      },
       APP_UNINSTALLED: {
         deliveryMethod: DeliveryMethod.Http,
         callbackUrl: "/webhooks",
@@ -46,7 +50,9 @@ if (process.env.SHOPIFY_API_KEY && process.env.SHOPIFY_API_SECRET) {
     },
     hooks: {
       afterAuth: async ({ session }) => {
-        shopify.registerWebhooks({ session });
+        console.log("AfterAuth: Registering webhooks");
+        await registerWebhooks({ session });
+        console.log("Webhooks registered successfully after authentication");
       },
     },
     future: {
@@ -57,10 +63,12 @@ if (process.env.SHOPIFY_API_KEY && process.env.SHOPIFY_API_SECRET) {
       ? { customShopDomains: [process.env.SHOP_CUSTOM_DOMAIN] }
       : {}),
   });
-  // console.log("Shopify app initialized successfully:");
+
+  console.log("Shopify app initialized successfully:");
 } else {
   console.log("Shopify app initialization failed: Missing API Key or Secret.");
 }
+
 const app = express();
 app.use(cookieParser());
 // app.use(
@@ -81,17 +89,17 @@ app.use(
 app.use(express.urlencoded({ extended: true }));
 
 // Middleware for express-session
-// app.use(
-//   session({
-//     secret: process.env.SESSION_COOKIE_KEY,
-//     resave: false,
-//     saveUninitialized: true,
-//   })
-// );
+app.use(
+  session({
+    secret: process.env.SESSION_COOKIE_KEY,
+    resave: false,
+    saveUninitialized: true,
+  })
+);
 
 // Oauth
-// app.get("/api/auth", authorize);
-// app.get("/api/auth/callback", oauthCallback);
+app.get("/api/auth", authorize);
+app.get("/api/auth/callback", oauthCallback);
 
 // load app session
 app.use(loadSession);
