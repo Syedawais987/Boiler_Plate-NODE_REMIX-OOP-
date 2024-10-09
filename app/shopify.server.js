@@ -71,12 +71,36 @@ if (process.env.SHOPIFY_API_KEY && process.env.SHOPIFY_API_SECRET) {
 
 const app = express();
 app.use(cookieParser());
-// app.use(
-//   cors({
-//     origin: "https://admin.shopify.com",
-//     credentials: true,
-//   })
-// );
+app.use(
+  cors({
+    origin: [
+      "https://muscled-tests.myshopify.com",
+      "https://amplifiedamino.com",
+      "https://admin.shopify.com",
+      "https://d4f9-115-186-169-23.ngrok-free.app",
+    ],
+    methods: "GET,POST,OPTIONS",
+    credentials: true,
+  })
+);
+app.options("*", (req, res) => {
+  console.log("Received OPTIONS request from:", req.headers.origin);
+  const origin = req.headers.origin;
+  const allowedOrigins = [
+    "https://muscled-tests.myshopify.com",
+    "https://amplifiedamino.com",
+    "https://admin.shopify.com",
+    "https://d4f9-115-186-169-23.ngrok-free.app",
+  ];
+  if (allowedOrigins.includes(origin)) {
+    res.header("Access-Control-Allow-Origin", origin);
+  }
+  res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.header("Access-Control-Allow-Credentials", "true");
+  res.sendStatus(204);
+});
+
 app.use(express.static("public"));
 // app.use(express.json());
 app.use(

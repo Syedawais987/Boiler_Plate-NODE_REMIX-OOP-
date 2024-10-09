@@ -1,8 +1,8 @@
 import { Router } from "express";
-import errorHandler from "../middleware//errorHandler.js";
+import errorHandler from "../middleware/errorHandler.js";
 import { verifyShopifyWebhook } from "../middleware/webhook.js";
 import { checkout } from "../controllers/order_controller.js";
-import { handleProductDeletedFromShopify } from "../controllers/product_controller.js";
+import { handleProductDeletedFromShopify } from "../controllers//product_controller.js";
 const router = Router();
 
 router.post("/checkout", async (req, res) => {
