@@ -11,9 +11,12 @@ import {
 import { orderCreate, OrderDelete } from "../graphql/order.mutation.js";
 
 const getSessionFromDB = async (shop) => {
-  const session = await prisma.session.findFirst({ where: { shop } });
+  const session = await prisma.session.findUnique({
+    where: { shop },
+  });
   return session;
 };
+
 const checkIfProductExists = async (wooCommerceId) => {
   const existingProduct = await prisma.productMapping.findUnique({
     where: { wooCommerceId: wooCommerceId.toString() },

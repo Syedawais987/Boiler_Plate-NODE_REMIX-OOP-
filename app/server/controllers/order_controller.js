@@ -1,33 +1,33 @@
 import prisma from "../../db.server.js";
-// import { shopify_graphql } from "../utils/shopifyGraphql.js";
-// import { fetchCart } from "../graphql/cart.muatation.js";
+import { shopify_graphql } from "../utils/shopifyGraphql.js";
+import { fetchCart } from "../graphql/cart.muatation.js";
 import WooCommerce from "../init.js";
 
 export const checkout = async (req, res) => {
-  // const session = req.shop.session;
-  // const cartId = req.body.cartId;
+  const session = req.shop.session;
+  const cartId = req.body.cartId;
 
   try {
-    // const cartResponse = await shopify_graphql({
-    //   session,
-    //   query: fetchCart,
-    //   variables: { cartId },
-    // });
+    const cartResponse = await shopify_graphql({
+      session,
+      query: fetchCart,
+      variables: { cartId },
+    });
 
-    // console.log("cart query response", cartResponse);
-    // if (cartResponse.errors) {
-    //   return res.status(400).json({ errors: cartResponse.errors });
-    // }
+    console.log("cart query response", cartResponse);
+    if (cartResponse.errors) {
+      return res.status(400).json({ errors: cartResponse.errors });
+    }
 
-    // const shopifyCart = cartResponse.data.cart;
-    // const cartItems = shopifyCart.lines.edges.map((edge) => ({
-    //   shopifyProductId: edge.node.merchandise.product.id,
-    //   quantity: edge.node.quantity,
-    // }));
+    const shopifyCart = cartResponse.data.cart;
+    const cartItems = shopifyCart.lines.edges.map((edge) => ({
+      shopifyProductId: edge.node.merchandise.product.id,
+      quantity: edge.node.quantity,
+    }));
 
-    const cartItems = [
-      { shopifyProductId: "gid://shopify/Product/7657475801169", quantity: 1 },
-    ];
+    // const cartItems = [
+    //   { shopifyProductId: "gid://shopify/Product/7657475801169", quantity: 1 },
+    // ];
 
     const wooCommerceItems = [];
     for (const item of cartItems) {

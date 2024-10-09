@@ -9,7 +9,7 @@ datasource db {
 
 model Session {
   id          String    @id @default(uuid())
-  shop        String
+  shop        String    @unique
   state       String
   isOnline    Boolean   @default(false)
   scope       String?
@@ -18,7 +18,7 @@ model Session {
   userId      BigInt?
 
   createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt @default(now()) 
+  updatedAt   DateTime   @updatedAt @default(now())
 }
 
 
