@@ -77,7 +77,7 @@ app.use(
       "https://muscled-tests.myshopify.com",
       "https://amplifiedamino.com",
       "https://admin.shopify.com",
-      "https://d4f9-115-186-169-23.ngrok-free.app",
+      "https://b01b-203-82-53-3.ngrok-free.app",
     ],
     methods: "GET,POST,OPTIONS",
     credentials: true,
@@ -90,7 +90,7 @@ app.options("*", (req, res) => {
     "https://muscled-tests.myshopify.com",
     "https://amplifiedamino.com",
     "https://admin.shopify.com",
-    "https://d4f9-115-186-169-23.ngrok-free.app",
+    "https://b01b-203-82-53-3.ngrok-free.app",
   ];
   if (allowedOrigins.includes(origin)) {
     res.header("Access-Control-Allow-Origin", origin);

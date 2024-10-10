@@ -5,10 +5,12 @@ import WooCommerce from "../init.js";
 export const checkout = async (req, res) => {
   console.log("REQ BODY", req.body);
 
-  const products = req.body.products || [
-    { productId: "gid://shopify/Product/7657475801169", quantity: 1 },
-  ];
-  const user_email = req.body.email || "customer@gmail.com";
+  // const products = req.body.products || [
+  //   { productId: "gid://shopify/Product/7657475801169", quantity: 1 },
+  // ];
+  // const user_email = req.body.customer || "customer@gmail.com";
+  const products = req.body.products;
+  const user_email = req.body.customer;
 
   try {
     const wooCommerceItems = [];
@@ -53,7 +55,7 @@ export const checkout = async (req, res) => {
     const wooOrderId = wooOrderResponse.data.id;
     const paymentLink = wooOrderResponse.data.payment_url;
 
-    // console.log("WooCommerce checkout created:", wooOrderResponse.data);
+    console.log("WooCommerce checkout created:", wooOrderResponse.data);
 
     return res.status(200).json({ paymentLink });
   } catch (error) {
