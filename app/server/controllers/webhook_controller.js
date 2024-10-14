@@ -341,9 +341,10 @@ export const handleProductDeleted = async (payload) => {
   }
 };
 export const handleOrderCreated = async (payload) => {
+  console.log("Received Payload:", payload);
   if (!payload) {
     console.error("Payload is undefined");
-    return;
+    return { error: "Payload is undefined" };
   }
 
   try {
@@ -355,46 +356,50 @@ export const handleOrderCreated = async (payload) => {
       throw new Error("No session found for the shop.");
     }
 
-    const orderVariables = {
-      order: {
-        currency: payload.currency || "USD",
+    const lineItems = await Promise.all(
+      (payload.line_items || []).map(async (item) => {
+        const variants = await getVariantIdFromProductId(
+          session,
+          item.product_id
+        );
+        const variantId = variants.length > 0 ? variants[0].id : null;
 
-        lineItems: (payload.line_items || []).map((item) => ({
+        return {
           title: item.name,
           quantity: item.quantity,
-          priceSet: {
-            shopMoney: {
-              amount: item.total || item.price,
-              currencyCode: payload.currency || "USD",
-            },
-          },
-          taxLines:
-            (item.tax_lines || []).map((tax) => ({
-              title: tax.title || "",
-              rate: tax.rate || 0,
-              priceSet: {
-                shopMoney: {
-                  amount: tax.price || 0,
-                  currencyCode: payload.currency || "USD",
-                },
+          variantId: variantId,
+          taxLines: (item.tax_lines || []).map((tax) => ({
+            title: tax.title || "Tax",
+            rate: tax.rate || 0,
+            priceSet: {
+              shopMoney: {
+                amount: tax.price || 0,
               },
-            })) || [],
-        })),
+            },
+          })),
+        };
+      })
+    );
+
+    const orderVariables = {
+      order: {
+        email: payload.billing.email || "",
+        lineItems: lineItems,
         transactions: [
           {
             kind: "SALE",
-            status: "SUCCESS",
+            status: payload.status,
             amountSet: {
               shopMoney: {
-                amount: payload.total,
+                amount: payload.total || "0.00",
                 currencyCode: payload.currency || "USD",
               },
             },
           },
         ],
         billingAddress: {
-          firstName: payload.billing.first_name || "",
-          lastName: payload.billing.last_name || "",
+          firstName: payload.billing.first_name || "Unknown",
+          lastName: payload.billing.last_name || "Unknown",
           company: payload.billing.company || "",
           address1: payload.billing.address_1 || "",
           address2: payload.billing.address_2 || "",
@@ -405,15 +410,24 @@ export const handleOrderCreated = async (payload) => {
           phone: payload.billing.phone || "",
         },
         shippingAddress: {
-          firstName: payload.shipping.first_name || "",
-          lastName: payload.shipping.last_name || "",
-          company: payload.shipping.company || "",
-          address1: payload.shipping.address_1 || "",
-          address2: payload.shipping.address_2 || "",
-          city: payload.shipping.city || "",
-          province: payload.shipping.state || "",
-          country: payload.shipping.country || "",
-          zip: payload.shipping.postcode || "",
+          firstName:
+            payload.shipping.first_name ||
+            payload.billing.first_name ||
+            "Unknown",
+          lastName:
+            payload.shipping.last_name ||
+            payload.billing.last_name ||
+            "Unknown",
+          company: payload.shipping.company || payload.billing.company || "",
+          address1:
+            payload.shipping.address_1 || payload.billing.address_1 || "",
+          address2:
+            payload.shipping.address_2 || payload.billing.address_2 || "",
+          city: payload.shipping.city || payload.billing.city || "",
+          province: payload.shipping.state || payload.billing.state || "",
+          country: payload.shipping.country || payload.billing.country || "",
+          zip: payload.shipping.postcode || payload.billing.postcode || "",
+          phone: payload.shipping.phone || payload.billing.phone || "",
         },
       },
     };
@@ -423,23 +437,29 @@ export const handleOrderCreated = async (payload) => {
       query: orderCreate,
       variables: { order: orderVariables.order, options: {} },
     });
+
     console.log("Order response", orderResponse);
-    if (orderResponse.errors) {
-      console.error("GraphQL error:", orderResponse.errors);
+
+    if (orderResponse.data.orderCreate.userErrors.length > 0) {
+      console.error(
+        "Order creation user errors:",
+        orderResponse.data.orderCreate.userErrors
+      );
       return {
         error: "Failed to create order",
-        details: JSON.stringify(orderResponse.errors),
+        details: JSON.stringify(orderResponse.data.orderCreate.userErrors),
       };
     }
 
     const createdOrder = orderResponse.data.orderCreate.order;
     console.log("Order created in Shopify:", createdOrder);
-    await prisma.orderMapping.create({
-      data: {
-        woocommerceOrderId: String(payload.id),
-        shopifyOrderId: createdOrder.id,
-      },
-    });
+
+    // await prisma.orderMapping.create({
+    //   data: {
+    //     woocommerceOrderId: String(payload.id),
+    //     shopifyOrderId: createdOrder.id,
+    //   },
+    // });
 
     return { success: true, order: createdOrder };
   } catch (error) {
@@ -493,5 +513,48 @@ export const handleDeleteOrder = async (payload) => {
   } catch (error) {
     console.error("Error deleting order in Shopify:", error);
     return { error: "Failed to delete order", details: error.message };
+  }
+};
+export const getVariantIdFromProductId = async (session, productId) => {
+  const productQuery = `
+    query GetProductVariants($productId: ID!) {
+      product(id: $productId) {
+        variants(first: 100) {
+          edges {
+            node {
+              id
+              title
+              sku
+              price
+            }
+          }
+        }
+      }
+    }
+  `;
+
+  try {
+    const response = await shopify_graphql({
+      session,
+      query: productQuery,
+      variables: { productId },
+    });
+
+    if (response.errors) {
+      console.error("GraphQL error fetching variants:", response.errors);
+      throw new Error("Failed to fetch variants");
+    }
+
+    const variants = response.data.product.variants.edges.map((edge) => ({
+      id: edge.node.id,
+      title: edge.node.title,
+      sku: edge.node.sku,
+      price: edge.node.price,
+    }));
+
+    return variants;
+  } catch (error) {
+    console.error("Error fetching variant ID:", error);
+    throw new Error(error.message);
   }
 };

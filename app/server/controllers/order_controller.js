@@ -1,14 +1,10 @@
 import prisma from "../../db.server.js";
-
+import { shopify_graphql } from "../utils/shopifyGraphql";
 import WooCommerce from "../init.js";
-// import fetch from "node-fetch";
+import { getOrderDetails } from "../graphql/order.mutation.js";
 export const checkout = async (req, res) => {
-  console.log("REQ BODY", req.body);
+  // console.log("REQ BODY", req.body);
 
-  // const products = req.body.products || [
-  //   { productId: "gid://shopify/Product/7657475801169", quantity: 1 },
-  // ];
-  // const user_email = req.body.customer || "customer@gmail.com";
   const products = req.body.products;
   const user_email = req.body.customer;
 
@@ -64,188 +60,193 @@ export const checkout = async (req, res) => {
   }
 };
 
-// const getSessionFromDB = async (shop) => {
-//   const session = await prisma.session.findUnique({
-//     where: { shop },
-//   });
-//   return session;
-// };
+export const fetchorder = async (req, res) => {
+  const { orderId } = req.query;
 
-// export const checkout = async (req, res) => {
-//   const shop = process.env.SHOP;
-//   const session = await getSessionFromDB(shop);
-//   const storefrontAccessToken = process.env.STOREFRONT_ACCESS_TOKEN;
+  if (!orderId) {
+    return res.status(400).json({ error: "Order ID is required" });
+  }
 
-//   const cartId =
-//     req.body.cartId ||
-//     "gid://shopify/Cart/Z2NwLXVzLWVhc3QxOjAxSjlTOE4xWDg…U0YwRjBWVlc2?key=06796953c7c92fbc4ca4bd9391e0db7b";
-//   console.log("Cart ID:", cartId);
+  try {
+    const shop = process.env.SHOP;
 
-//   try {
-//     const cartResponse = await fetchCartFromShopify(
-//       cartId,
-//       storefrontAccessToken
-//     );
+    const session = await getSessionFromDB(shop);
+    // const session = req.shop.session;
 
-//     console.log("cart query response", cartResponse);
-//     if (cartResponse.errors) {
-//       return res.status(400).json({ errors: cartResponse.errors });
-//     }
+    if (!session) {
+      return res.status(401).json({ error: "No session found for the shop" });
+    }
 
-//     const shopifyCart = cartResponse.data.cart;
-//     const cartItems = shopifyCart.lines.edges.map((edge) => ({
-//       shopifyProductId: edge.node.merchandise.product.id,
-//       quantity: edge.node.quantity,
-//     }));
+    const response = await shopify_graphql({
+      session,
+      query: getOrderDetails,
+      variables: { orderId },
+    });
 
-//     // const cartItems = [
-//     //   { shopifyProductId: "gid://shopify/Product/7657475801169", quantity: 1 },
-//     // ];
+    if (response.errors) {
+      console.error("Error fetching order details:", response.errors);
+      return res.status(500).json({ error: "Failed to fetch order details" });
+    }
 
-//     const wooCommerceItems = [];
-//     for (const item of cartItems) {
-//       const productMapping = await prisma.productMapping.findUnique({
-//         where: { shopifyProductId: item.shopifyProductId.toString() },
-//       });
+    const orderDetails = response.data.order;
 
-//       if (productMapping) {
-//         wooCommerceItems.push({
-//           product_id: productMapping.wooCommerceId,
-//           quantity: item.quantity,
-//         });
-//       } else {
-//         console.error(
-//           `Product with Shopify ID ${item.shopifyProductId} not found in WooCommerce`
-//         );
-//       }
-//     }
+    if (!orderDetails) {
+      return res.status(404).json({ error: "Order not found" });
+    }
 
-//     if (wooCommerceItems.length === 0) {
-//       return res
-//         .status(400)
-//         .json({ message: "No matching products found in WooCommerce" });
-//     }
+    const customerDetails = orderDetails.customer || null;
 
-//     const orderData = {
-//       payment_method: "dfin",
-//       payment_method_title: "DFIN Payment",
-//       set_paid: false,
-//       billing: {
-//         email: "syedawaishussain987@gmail.com",
-//       },
-//       line_items: wooCommerceItems,
-//     };
+    const lineItems = orderDetails.lineItems.edges.map((edge) => {
+      const item = edge.node;
+      return {
+        id: item.id,
+        title: item.title,
+        quantity: item.quantity,
+        variant: {
+          id: item.variant.id,
+          title: item.variant.title,
+          price: item.variant.price,
+          productId: item.variant.product.id,
+        },
+      };
+    });
 
-//     const wooOrderResponse = await WooCommerce.post("orders", orderData);
-//     const wooOrderId = wooOrderResponse.data.id;
-//     const paymentLink = wooOrderResponse.data.payment_url;
+    return res.status(200).json({
+      orderDetails,
+      customerDetails,
+      lineItems,
+    });
+  } catch (error) {
+    console.error("Error fetching order details:", error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
 
-//     // await prisma.orderMapping.create({
-//     //   data: {
-//     //     woocommerceOrderId: String(payload.id),
-//     //     shopifyOrderId: .id,
-//     //   },
-//     // });
+export const order_checkout = async (req, res) => {
+  const { orderId } = req.body;
 
-//     console.log("WooCommerce checkout created:", wooOrderResponse.data);
+  if (!orderId) {
+    return res.status(400).json({ error: "Order ID is required" });
+  }
 
-//     return res.status(200).json({ paymentLink });
-//   } catch (error) {
-//     console.error("Error creating WooCommerce checkout:", error);
-//     return res.status(500).json({ error: "Internal Server Error" });
-//   }
-// };
+  try {
+    const shop = process.env.SHOP;
+    const session = await getSessionFromDB(shop);
+    // const session = req.shop.session;
 
-// const fetchCartFromShopify = async (cartId, storefrontAccessToken) => {
-//   const query = `#graphql
-//     query fetchCart($cartId: ID!) {
-//       cart(id: $cartId) {
-//         id
-//         lines(first: 100) {
-//           edges {
-//             node {
-//               id
-//               quantity
-//               merchandise {
-//                 ... on ProductVariant {
-//                   product {
-//                     id
-//                     title
-//                     handle
-//                   }
-//                   priceV2 {
-//                     amount
-//                     currencyCode
-//                   }
-//                 }
-//               }
-//               attributes {
-//                 key
-//                 value
-//               }
-//             }
-//           }
-//         }
-//         attributes {
-//           key
-//           value
-//         }
-//         buyerIdentity {
-//           email
-//           phone
-//           customer {
-//             id
-//           }
-//           countryCode
-//           deliveryAddressPreferences {
-//             address1
-//             address2
-//             city
-//             provinceCode
-//             countryCodeV2
-//             zip
-//           }
-//         }
-//         checkoutUrl
-//         cost {
-//           totalAmount {
-//             amount
-//             currencyCode
-//           }
-//           subtotalAmount {
-//             amount
-//             currencyCode
-//           }
-//           totalTaxAmount {
-//             amount
-//             currencyCode
-//           }
-//           totalDutyAmount {
-//             amount
-//             currencyCode
-//           }
-//         }
-//         totalQuantity
-//         createdAt
-//         updatedAt
-//       }
-//     }`;
+    if (!session) {
+      return res.status(401).json({ error: "No session found for the shop" });
+    }
 
-//   const response = await fetch(
-//     `https://${process.env.SHOP}.myshopify.com/api/2024-10/graphql.json`,
-//     {
-//       method: "POST",
-//       headers: {
-//         "Content-Type": "application/json",
-//         "X-Shopify-Storefront-Access-Token": storefrontAccessToken,
-//       },
-//       body: JSON.stringify({
-//         query,
-//         variables: { cartId },
-//       }),
-//     }
-//   );
+    const response = await shopify_graphql({
+      session,
+      query: getOrderDetails,
+      variables: { orderId },
+    });
+    // console.log("reponse data", response.data);
+    if (response.errors) {
+      console.error("Error fetching order details:", response.errors);
+      return res.status(500).json({ error: "Failed to fetch order details" });
+    }
 
-//   const data = await response.json();
-//   return data;
-// };
+    const orderDetails = response.data.order;
+    if (!orderDetails) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+
+    const customerDetails = orderDetails.customer || {};
+    const billingAddress = orderDetails.billingAddress || {};
+    const shippingAddress = orderDetails.shippingAddress || {};
+
+    const wooCommerceItems = [];
+    const lineItems = orderDetails.lineItems.edges.map((edge) => edge.node);
+    // console.log("lineitems:", lineItems);
+
+    for (const item of lineItems) {
+      const shopifyVariantId = item.variant.id;
+      const quantity = item.quantity;
+      const shopifyProductId = item.variant?.product?.id;
+
+      if (!shopifyProductId) {
+        console.error(`Product ID not found for variant: ${item.variant.id}`);
+        continue;
+      }
+
+      const productMapping = await prisma.productMapping.findUnique({
+        where: { shopifyProductId: shopifyProductId.toString() },
+      });
+
+      if (productMapping && productMapping.wooCommerceId) {
+        wooCommerceItems.push({
+          product_id: productMapping.wooCommerceId,
+          quantity: quantity,
+        });
+      } else {
+        console.error(
+          `Product with Shopify ID ${shopifyProductId} not found in WooCommerce`
+        );
+      }
+    }
+
+    if (wooCommerceItems.length === 0) {
+      return res
+        .status(400)
+        .json({ error: "No matching products found in WooCommerce" });
+    }
+
+    const orderData = {
+      payment_method: "dfin",
+      payment_method_title: "DFIN Payment",
+      set_paid: false,
+      billing: {
+        first_name: billingAddress.firstName || customerDetails.firstName,
+        last_name: billingAddress.lastName || customerDetails.lastName,
+        address_1: billingAddress.address1 || "",
+        address_2: billingAddress.address2 || "",
+        city: billingAddress.city || "",
+        state: billingAddress.province || "",
+        postcode: billingAddress.zip || "",
+        country: billingAddress.country || "",
+        email: orderDetails.email || customerDetails.email,
+        phone: billingAddress.phone || "",
+      },
+      shipping: {
+        first_name: shippingAddress.firstName || "",
+        last_name: shippingAddress.lastName || "",
+        address_1: shippingAddress.address1 || "",
+        address_2: shippingAddress.address2 || "",
+        city: shippingAddress.city || "",
+        state: shippingAddress.province || "",
+        postcode: shippingAddress.zip || "",
+        country: shippingAddress.country || "",
+        phone: shippingAddress.phone || "",
+      },
+      line_items: wooCommerceItems,
+    };
+
+    const wooOrderResponse = await WooCommerce.post("orders", orderData);
+    const wooOrderId = wooOrderResponse.data.id;
+    const paymentLink = wooOrderResponse.data.payment_url;
+
+    await prisma.orderMapping.create({
+      data: {
+        shopifyOrderId: orderId,
+        woocommerceOrderId: wooOrderId.toString(),
+      },
+    });
+
+    // console.log("WooCommerce checkout created:", wooOrderResponse.data);
+
+    // return res.status(200).json({ paymentLink });
+    return res.redirect(303, paymentLink);
+  } catch (error) {
+    console.error("Error creating WooCommerce checkout:", error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+export const getSessionFromDB = async (shop) => {
+  const session = await prisma.session.findUnique({
+    where: { shop },
+  });
+  return session;
+};

@@ -1,11 +1,14 @@
 import { shopify_graphql } from "../utils/shopifyGraphql.js";
 import { fetchActiveProducts } from "../graphql/products.mutation.js";
 import prisma from "../../db.server.js";
+import { getSessionFromDB } from "./order_controller.js";
 
 import WooCommerce from "../init.js";
 
 export const productsSync = async (req, res) => {
-  const session = req.shop.session;
+  // const session = req.shop.session;
+  const shop = process.env.SHOP;
+  const session = await getSessionFromDB(shop);
 
   try {
     const response = await shopify_graphql({
@@ -86,17 +89,6 @@ export const productsSync = async (req, res) => {
         weight: product.weight.toString(),
         sku: product.sku,
         tags: product.tags.map((tag) => ({ name: tag })),
-        variations: product.variants.map((variant) => ({
-          regular_price: variant.price.toString(),
-          sku: variant.sku,
-          weight: variant.weight.toString() || "0",
-          attributes: [
-            {
-              name: "options",
-              option: variant.options,
-            },
-          ],
-        })),
       };
 
       try {
@@ -115,6 +107,49 @@ export const productsSync = async (req, res) => {
         });
 
         console.log(`ProductMapping created successfully for ${product.title}`);
+
+        for (let variant of product.variants) {
+          const variantData = {
+            regular_price: variant.price.toString(),
+            sku: variant.sku,
+            weight: variant.weight.toString() || "0",
+            attributes: [
+              {
+                name: "options",
+                option: variant.options,
+              },
+            ],
+          };
+
+          try {
+            const wooVariantResponse = await WooCommerce.post(
+              `products/${wooCommerceProductId}/variations`,
+              variantData
+            );
+            const wooCommerceVariantId = wooVariantResponse.data.id;
+
+            console.log(
+              `Variant ${variant.sku} created successfully for ${product.title}`
+            );
+
+            await prisma.variantMapping.create({
+              data: {
+                wooCommerceVariantId: wooCommerceVariantId.toString(),
+                shopifyVariantId: variant.id.toString(),
+                productMappingId: wooCommerceProductId,
+              },
+            });
+
+            console.log(
+              `VariantMapping created successfully for variant ${variant.sku}`
+            );
+          } catch (variantError) {
+            console.error(
+              `Failed to create variant ${variant.sku} for product ${product.title}:`,
+              variantError.response?.data || variantError.message
+            );
+          }
+        }
       } catch (error) {
         console.error(
           `Failed to create product ${product.title}:`,
@@ -133,6 +168,7 @@ export const productsSync = async (req, res) => {
 };
 
 export const handleProductDeletedFromShopify = async (payload) => {
+  console.log(payload);
   if (!payload) {
     console.error("Payload is undefined");
     return;

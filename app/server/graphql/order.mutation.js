@@ -7,10 +7,11 @@ mutation OrderCreate($order: OrderCreateOrderInput!, $options: OrderCreateOption
     }
     order {
       id
+      email
       totalTaxSet {
         shopMoney {
           amount
-          currencyCode
+         
         }
       }
       lineItems(first: 5) {
@@ -27,15 +28,39 @@ mutation OrderCreate($order: OrderCreateOrderInput!, $options: OrderCreateOption
             priceSet {
               shopMoney {
                 amount
-                currencyCode
+             
               }
             }
           }
         }
       }
+      billingAddress {
+        firstName
+        lastName
+        address1
+        address2
+        city
+        province
+        country
+        zip
+        phone
+      }
+      shippingAddress {
+        firstName
+        lastName
+        address1
+        address2
+        city
+        province
+        country
+        zip
+        phone
+      }
     }
   }
-}`;
+}
+`;
+
 export const OrderDelete = `
 mutation OrderDelete($orderId: ID!) {
   orderDelete(orderId: $orderId) {
@@ -46,3 +71,83 @@ mutation OrderDelete($orderId: ID!) {
     deletedId
   }
 }`;
+export const getOrderDetails = `
+query GetOrderDetails($orderId: ID!) {
+  order(id: $orderId) {
+    id
+    name
+    email
+    totalPriceSet {
+      shopMoney {
+        amount
+        currencyCode
+      }
+    }
+    customer {
+      id
+      firstName
+      lastName
+      email
+      phone
+      defaultAddress {
+        address1
+        address2
+        city
+        province
+        country
+        zip
+      }
+    }
+    billingAddress {
+      firstName
+      lastName
+      address1
+      address2
+      city
+      province
+      country
+      zip
+      phone
+    }
+    shippingAddress {
+      firstName
+      lastName
+      address1
+      address2
+      city
+      province
+      country
+      zip
+      phone
+    }
+    lineItems(first: 10) {
+      edges {
+        node {
+          id
+          title
+          quantity
+          variant {
+            id
+            title
+            price
+            product {
+              id  # Added product ID
+            }
+          }
+        }
+      }
+    }
+    transactions {
+      id
+      kind
+      status
+      amountSet {
+        shopMoney {
+          amount
+          currencyCode
+        }
+      }
+    }
+  }
+}
+`;

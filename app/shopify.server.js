@@ -113,20 +113,20 @@ app.use(
 app.use(express.urlencoded({ extended: true }));
 
 // Middleware for express-session
-app.use(
-  session({
-    secret: process.env.SESSION_COOKIE_KEY,
-    resave: false,
-    saveUninitialized: true,
-  })
-);
+// app.use(
+//   session({
+//     secret: process.env.SESSION_COOKIE_KEY,
+//     resave: false,
+//     saveUninitialized: true,
+//   })
+// );
 
 // Oauth
-app.get("/api/auth", authorize);
-app.get("/api/auth/callback", oauthCallback);
+// app.get("/api/auth", authorize);
+// app.get("/api/auth/callback", oauthCallback);
 
 // load app session
-app.use(loadSession);
+// app.use(loadSession);
 app.use("/api", webhooksRoutes);
 app.use("/api/app", apiRoutes);
 app.use("/proxy/api", proxyApiRoutes);
