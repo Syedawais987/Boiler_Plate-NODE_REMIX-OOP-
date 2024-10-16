@@ -137,8 +137,8 @@ export const order_checkout = async (req, res) => {
 
     // console.log("WooCommerce checkout created:", wooOrderResponse.data);
 
-    return res.status(200).json({ paymentLink });
-    // return res.redirect(303, paymentLink);
+    // return res.status(200).json({ paymentLink });
+    return res.redirect(303, paymentLink);
   } catch (error) {
     console.error("Error creating WooCommerce checkout:", error);
     return res.status(500).json({ error: "Internal Server Error" });
