@@ -11,9 +11,9 @@ export const order_checkout = async (req, res) => {
   }
 
   try {
-    const shop = process.env.SHOP;
-    const session = await getSessionFromDB(shop);
-    // const session = req.shop.session;
+    // const shop = process.env.SHOP;
+    // const session = await getSessionFromDB(shop);
+    const session = req.shop.session;
 
     if (!session) {
       return res.status(401).json({ error: "No session found for the shop" });
@@ -342,10 +342,10 @@ export const fetchorder = async (req, res) => {
   }
 
   try {
-    const shop = process.env.SHOP;
+    // const shop = process.env.SHOP;
 
-    const session = await getSessionFromDB(shop);
-    // const session = req.shop.session;
+    // const session = await getSessionFromDB(shop);
+    const session = req.shop.session;
 
     if (!session) {
       return res.status(401).json({ error: "No session found for the shop" });

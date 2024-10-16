@@ -6,9 +6,9 @@ import { getSessionFromDB } from "./order_controller.js";
 import WooCommerce from "../init.js";
 
 export const productsSync = async (req, res) => {
-  // const session = req.shop.session;
-  const shop = process.env.SHOP;
-  const session = await getSessionFromDB(shop);
+  const session = req.shop.session;
+  // const shop = process.env.SHOP;
+  // const session = await getSessionFromDB(shop);
 
   try {
     const response = await shopify_graphql({

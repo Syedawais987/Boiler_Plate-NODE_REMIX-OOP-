@@ -16,7 +16,7 @@ import {
 import axios from "axios";
 
 const getSessionFromDB = async (shop) => {
-  const session = await prisma.session.findUnique({
+  const session = await prisma.session.findFirst({
     where: { shop },
   });
   return session;
