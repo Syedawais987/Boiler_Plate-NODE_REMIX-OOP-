@@ -24,7 +24,7 @@ export const order_checkout = async (req, res) => {
       query: getOrderDetails,
       variables: { orderId },
     });
-    // console.log("reponse data", response.data);
+    console.log("reponse data", response.data);
     if (response.errors) {
       console.error("Error fetching order details:", response.errors);
       return res.status(500).json({ error: "Failed to fetch order details" });
@@ -145,7 +145,7 @@ export const order_checkout = async (req, res) => {
   }
 };
 export const getSessionFromDB = async (shop) => {
-  const session = await prisma.session.findUnique({
+  const session = await prisma.session.findFirst({
     where: { shop },
   });
   return session;

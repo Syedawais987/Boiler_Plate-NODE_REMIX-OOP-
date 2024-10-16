@@ -157,10 +157,10 @@ export const productsSync = async (req, res) => {
               `VariantMapping created successfully for variant ${variant.sku}`
             );
           } catch (variantError) {
-            console.error(
-              `Failed to create variant ${variant.sku} for product ${product.title}:`,
-              variantError.response?.data || variantError.message
-            );
+            // console.error(
+            //   `Failed to create variant ${variant.sku} for product ${product.title}:`,
+            //   variantError.response?.data || variantError.message
+            // );
           }
         }
       } catch (error) {

@@ -1,6 +1,6 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
-client_id = "3355916869bcc00d6365091f109a360f"
+client_id = "6a3e4d52fb57cd48d8f5f6ffc9c4c10b"
 name = "EA_AMINO"
 handle = "ea_amino"
 application_url = "https://434b-154-80-125-169.ngrok-free.app"
