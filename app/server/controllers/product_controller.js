@@ -98,15 +98,28 @@ export const productsSync = async (req, res) => {
         console.log(
           `Product ${product.title} created successfully in WooCommerce`
         );
-
-        await prisma.productMapping.create({
-          data: {
-            wooCommerceId: wooCommerceProductId.toString(),
-            shopifyProductId: product.id.toString(),
-          },
-        });
-
-        console.log(`ProductMapping created successfully for ${product.title}`);
+        try {
+          await prisma.productMapping.create({
+            data: {
+              wooCommerceId: wooCommerceProductId.toString(),
+              shopifyProductId: product.id.toString(),
+            },
+          });
+          console.log(
+            `ProductMapping created successfully for ${product.title}`
+          );
+        } catch (error) {
+          if (error.code === "P2002") {
+            console.error(
+              `Unique constraint violation: Product with Shopify ID ${product.id} or WooCommerce ID ${wooCommerceProductId} already exists in ProductMapping.`
+            );
+          } else {
+            console.error(
+              `Failed to create product mapping for ${product.title}:`,
+              error.response?.data || error.message
+            );
+          }
+        }
 
         for (let variant of product.variants) {
           const variantData = {

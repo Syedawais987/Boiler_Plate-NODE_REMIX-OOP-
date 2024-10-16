@@ -16,6 +16,7 @@ router.get("/order", async (req, res) => {
   await fetchorder(req, res);
 });
 router.post("/order_checkout", async (req, res) => {
+  console.log("Order Checkout Called:", req.body);
   await order_checkout(req, res);
 });
 router.post(

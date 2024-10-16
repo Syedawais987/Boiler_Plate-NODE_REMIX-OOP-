@@ -109,17 +109,36 @@ export const order_checkout = async (req, res) => {
     const wooOrderId = wooOrderResponse.data.id;
     const paymentLink = wooOrderResponse.data.payment_url;
 
-    // await prisma.orderMapping.create({
-    //   data: {
-    //     shopifyOrderId: orderId,
-    //     woocommerceOrderId: wooOrderId.toString(),
-    //   },
-    // });
+    try {
+      await prisma.orderMapping.create({
+        data: {
+          shopifyOrderId: orderId,
+          woocommerceOrderId: wooOrderId.toString(),
+        },
+      });
+    } catch (error) {
+      if (error.code === "P2002") {
+        console.error("Unique constraint violation:", error.meta?.target);
+
+        if (error.meta?.target?.includes("shopifyOrderId")) {
+          return res.status(409).json({
+            error: `Order with Shopify Order ID ${orderId} already exists.`,
+          });
+        } else if (error.meta?.target?.includes("woocommerceOrderId")) {
+          return res.status(409).json({
+            error: `Order with WooCommerce Order ID ${wooOrderId} already exists.`,
+          });
+        }
+      } else {
+        console.error("Error creating order mapping:", error);
+        return res.status(500).json({ error: "Internal Server Error" });
+      }
+    }
 
     // console.log("WooCommerce checkout created:", wooOrderResponse.data);
 
-    // return res.status(200).json({ paymentLink });
-    return res.redirect(303, paymentLink);
+    return res.status(200).json({ paymentLink });
+    // return res.redirect(303, paymentLink);
   } catch (error) {
     console.error("Error creating WooCommerce checkout:", error);
     return res.status(500).json({ error: "Internal Server Error" });

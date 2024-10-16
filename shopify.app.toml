@@ -3,7 +3,7 @@
 client_id = "3355916869bcc00d6365091f109a360f"
 name = "EA_AMINO"
 handle = "ea_amino"
-application_url = "https://e56b-154-80-93-180.ngrok-free.app"
+application_url = "https://434b-154-80-125-169.ngrok-free.app"
 embedded = true
 
 [build]
@@ -18,12 +18,12 @@ scopes = "write_products,read_products,read_orders,write_orders,read_customers"
 
 [auth]
 redirect_urls = [
-  "https://e56b-154-80-93-180.ngrok-free.app/auth/callback",
-  "https://e56b-154-80-93-180.ngrok-free.app/auth/shopify/callback",
-  "https://e56b-154-80-93-180.ngrok-free.app/api/auth/callback",
+  "https://434b-154-80-125-169.ngrok-free.app/auth/callback",
+  "https://434b-154-80-125-169.ngrok-free.app/auth/shopify/callback",
+  "https://434b-154-80-125-169.ngrok-free.app/api/auth/callback",
 ]
 [app_proxy]
-url = "https://e56b-154-80-93-180.ngrok-free.app/proxy/api"
+url = "https://434b-154-80-125-169.ngrok-free.app/proxy/api"
 subpath = "EA-api"
 prefix = "a"
 

@@ -6,18 +6,14 @@ import {
   handleOrderCreated,
   handleProductDeleted,
   handleDeleteOrder,
+  handleOrderUpdated,
 } from "../controllers/webhook_controller.js";
 
 const router = express.Router();
 
 router.post("/webhook", async (req, res) => {
   console.log("Headers:", req.headers);
-  // console.log("Body:", req.body);
-  const rawBody = req.rawBody;
-
-  // console.log("Raw Body:", rawBody);
   const eventType = req.headers["x-wc-webhook-topic"];
-
   const contentType = req.headers["content-type"];
   let payload;
 
@@ -33,8 +29,6 @@ router.post("/webhook", async (req, res) => {
   } else {
     return res.status(415).json({ error: "Unsupported content type" });
   }
-
-  console.log("Payload ", payload);
 
   console.log(`Received WooCommerce event: ${eventType}`);
   let result;
@@ -55,6 +49,9 @@ router.post("/webhook", async (req, res) => {
     case "order.deleted":
       result = await handleDeleteOrder(payload);
       break;
+    case "order.updated":
+      result = await handleOrderUpdated(payload);
+      break;
     default:
       result = {
         status: 400,
@@ -65,9 +62,7 @@ router.post("/webhook", async (req, res) => {
   if (result && result.error) {
     res.status(500).json({ error: result.error, details: result.details });
   } else if (result && result.success) {
-    res
-      .status(200)
-      .json({ success: true, message: result.message || "Success" });
+    res.status(200).json({ success: true, message: result.message });
   } else {
     res
       .status(result.status || 200)

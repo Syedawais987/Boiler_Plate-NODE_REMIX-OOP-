@@ -8,7 +8,12 @@ import {
   productUpdateWithMedia,
   productDelete,
 } from "../graphql/products.mutation";
-import { orderCreate, OrderDelete } from "../graphql/order.mutation.js";
+import {
+  orderCreate,
+  OrderDelete,
+  updateOrderStatusMutation,
+} from "../graphql/order.mutation.js";
+import axios from "axios";
 
 const getSessionFromDB = async (shop) => {
   const session = await prisma.session.findUnique({
@@ -23,6 +28,149 @@ const checkIfProductExists = async (wooCommerceId) => {
   });
   return existingProduct !== null;
 };
+const fetchOrderDetails = async (shopifyOrderId, accessToken) => {
+  const url = `https://${process.env.SHOP}/admin/api/2024-04/orders/${shopifyOrderId}.json`;
+  try {
+    const response = await axios.get(url, {
+      headers: {
+        "X-Shopify-Access-Token": accessToken,
+        "Content-Type": "application/json",
+      },
+    });
+    return response.data.order;
+  } catch (error) {
+    console.error(
+      "Failed to fetch order details:",
+      error.response?.data || error.message
+    );
+    return null;
+  }
+};
+const fetchOrderTransactions = async (shopifyOrderId, accessToken) => {
+  const shop = process.env.SHOP;
+  const url = `https://${shop}/admin/api/2024-04/orders/${shopifyOrderId}/transactions.json`;
+  try {
+    const response = await axios.get(url, {
+      headers: {
+        "X-Shopify-Access-Token": accessToken,
+        "Content-Type": "application/json",
+      },
+    });
+    return response.data.transactions;
+  } catch (error) {
+    console.error(
+      "Failed to fetch transactions:",
+      error.response?.data || error.message
+    );
+    return null;
+  }
+};
+
+const markOrderAsPaid = async (shopifyOrderId) => {
+  const shop = process.env.SHOP;
+  const session = await getSessionFromDB(shop);
+  const accessToken = session.accessToken;
+
+  const transactions = await fetchOrderTransactions(
+    shopifyOrderId,
+    accessToken
+  );
+
+  if (!transactions || transactions.length === 0) {
+    console.log(`No transactions found for order ${shopifyOrderId}`);
+    return { error: "No authorized transaction found to capture" };
+  }
+
+  const authorizedTransaction = transactions.find(
+    (tx) => tx.kind === "authorization" && tx.status === "success"
+  );
+  if (!authorizedTransaction) {
+    console.log(
+      `No authorized transaction to capture for order ${shopifyOrderId}`
+    );
+    return { error: "Unable to capture payment, no authorization found" };
+  }
+
+  const url = `https://${shop}/admin/api/2024-04/orders/${shopifyOrderId}/transactions.json`;
+
+  const data = {
+    transaction: {
+      kind: "capture",
+      status: "success",
+      amount: authorizedTransaction.amount,
+    },
+  };
+
+  try {
+    const response = await axios.post(url, data, {
+      headers: {
+        "X-Shopify-Access-Token": accessToken,
+        "Content-Type": "application/json",
+      },
+    });
+
+    console.log(`Order ${shopifyOrderId} marked as paid`);
+    return response.data;
+  } catch (error) {
+    console.error(
+      `Failed to mark order as paid:`,
+      error.response?.data || error.message
+    );
+    return { error: "Failed to update financial status" };
+  }
+};
+
+export const handleOrderUpdated = async (payload) => {
+  const wooOrderPayload = payload;
+  const wooOrderId = wooOrderPayload.id;
+  const newStatus = wooOrderPayload.status;
+
+  try {
+    const orderMapping = await prisma.orderMapping.findUnique({
+      where: { woocommerceOrderId: wooOrderId.toString() },
+    });
+
+    if (!orderMapping) {
+      return { error: "Order mapping not found." };
+    }
+
+    const shopifyOrderId = orderMapping.shopifyOrderId.split("/").pop();
+
+    console.log("Shopify Order id:", shopifyOrderId);
+
+    if (newStatus === "completed" || newStatus === "processing") {
+      const paymentResponse = await markOrderAsPaid(shopifyOrderId);
+
+      if (paymentResponse.error) {
+        return paymentResponse;
+      }
+
+      console.log(`Order ${shopifyOrderId} marked as paid`);
+
+      const session = await getSessionFromDB(process.env.SHOP);
+      const accessToken = session.accessToken;
+      const orderDetails = await fetchOrderDetails(shopifyOrderId, accessToken);
+
+      if (orderDetails) {
+        console.log("Fetched Shopify order details:", orderDetails);
+      } else {
+        console.log("Failed to fetch Shopify order details.");
+      }
+
+      return {
+        success: true,
+        message: "Order status updated and details fetched successfully",
+      };
+    } else {
+      console.log(`Order status ${newStatus} is not handled`);
+      return { message: "No action needed for this status" };
+    }
+  } catch (error) {
+    console.error("Error handling WooCommerce webhook:", error);
+    return { error: "Internal Server Error" };
+  }
+};
+
 export const handleProductCreated = async (payload) => {
   if (!payload) {
     console.error("Payload is undefined");

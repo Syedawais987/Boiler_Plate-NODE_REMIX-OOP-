@@ -151,3 +151,17 @@ query GetOrderDetails($orderId: ID!) {
   }
 }
 `;
+export const updateOrderStatusMutation = `
+  mutation updateOrderStatus($orderId: ID!, $status: OrderStatus!) {
+    orderUpdate(id: $orderId, input: { financialStatus: $status }) {
+      order {
+        id
+        financialStatus
+      }
+      userErrors {
+        field
+        message
+      }
+    }
+  }
+`;
