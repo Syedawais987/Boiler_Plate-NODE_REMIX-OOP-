@@ -98,7 +98,8 @@ export const dfin_pay = async (req, res) => {
       //   orderDetails,
       //   customerDetails,
       //   lineItems,
-      dfinPaymentResponse: dfinResponse,
+      //   dfinPaymentResponse: dfinResponse,
+      paymentLink: dfinResponse.data.payment_link,
     });
   } catch (error) {
     console.error("Error processing payment:", error);
