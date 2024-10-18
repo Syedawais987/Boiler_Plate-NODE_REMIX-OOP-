@@ -43,3 +43,11 @@ model ProductMapping {
   updatedAt        DateTime @updatedAt
 }
 
+model PaymentMapping {
+  id        String   @id @default(uuid())
+  orderId   String   
+  payId     String   @unique  
+  status    String   @default("pending")  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

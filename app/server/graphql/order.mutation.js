@@ -1,76 +1,90 @@
-export const orderCreate = `
-mutation OrderCreate($order: OrderCreateOrderInput!, $options: OrderCreateOptionsInput) {
-  orderCreate(order: $order, options: $options) {
-    userErrors {
-      field
-      message
-    }
-    order {
-      id
-      email
-      totalTaxSet {
-        shopMoney {
-          amount
-         
-        }
-      }
-      lineItems(first: 5) {
-        nodes {
-          variant {
-            id
-          }
-          id
-          title
-          quantity
-          taxLines {
-            title
-            rate
-            priceSet {
-              shopMoney {
-                amount
-             
-              }
-            }
-          }
-        }
-      }
-      billingAddress {
-        firstName
-        lastName
-        address1
-        address2
-        city
-        province
-        country
-        zip
-        phone
-      }
-      shippingAddress {
-        firstName
-        lastName
-        address1
-        address2
-        city
-        province
-        country
-        zip
-        phone
-      }
-    }
-  }
-}
-`;
+// export const orderCreate = `
+// mutation OrderCreate($order: OrderCreateOrderInput!, $options: OrderCreateOptionsInput) {
+//   orderCreate(order: $order, options: $options) {
+//     userErrors {
+//       field
+//       message
+//     }
+//     order {
+//       id
+//       email
+//       totalTaxSet {
+//         shopMoney {
+//           amount
 
-export const OrderDelete = `
-mutation OrderDelete($orderId: ID!) {
-  orderDelete(orderId: $orderId) {
-    userErrors {
-      field
-      message
-    }
-    deletedId
-  }
-}`;
+//         }
+//       }
+//       lineItems(first: 5) {
+//         nodes {
+//           variant {
+//             id
+//           }
+//           id
+//           title
+//           quantity
+//           taxLines {
+//             title
+//             rate
+//             priceSet {
+//               shopMoney {
+//                 amount
+
+//               }
+//             }
+//           }
+//         }
+//       }
+//       billingAddress {
+//         firstName
+//         lastName
+//         address1
+//         address2
+//         city
+//         province
+//         country
+//         zip
+//         phone
+//       }
+//       shippingAddress {
+//         firstName
+//         lastName
+//         address1
+//         address2
+//         city
+//         province
+//         country
+//         zip
+//         phone
+//       }
+//     }
+//   }
+// }
+// `;
+
+// export const OrderDelete = `
+// mutation OrderDelete($orderId: ID!) {
+//   orderDelete(orderId: $orderId) {
+//     userErrors {
+//       field
+//       message
+//     }
+//     deletedId
+//   }
+// }`;
+// export const updateOrderStatusMutation = `
+//   mutation updateOrderStatus($orderId: ID!, $status: OrderStatus!) {
+//     orderUpdate(id: $orderId, input: { financialStatus: $status }) {
+//       order {
+//         id
+//         financialStatus
+//       }
+//       userErrors {
+//         field
+//         message
+//       }
+//     }
+//   }
+// `;
 export const getOrderDetails = `
 query GetOrderDetails($orderId: ID!) {
   order(id: $orderId) {
@@ -151,12 +165,13 @@ query GetOrderDetails($orderId: ID!) {
   }
 }
 `;
-export const updateOrderStatusMutation = `
-  mutation updateOrderStatus($orderId: ID!, $status: OrderStatus!) {
-    orderUpdate(id: $orderId, input: { financialStatus: $status }) {
+
+export const ORDER_MARK_AS_PAID_MUTATION = `
+  mutation orderMarkAsPaid($input: OrderMarkAsPaidInput!) {
+    orderMarkAsPaid(input: $input) {
       order {
         id
-        financialStatus
+       
       }
       userErrors {
         field

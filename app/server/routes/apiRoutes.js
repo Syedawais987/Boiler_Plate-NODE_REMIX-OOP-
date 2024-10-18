@@ -1,13 +1,19 @@
 import { Router } from "express";
 import errorHandler from "../middleware/errorHandler.js";
 
-import { productsSync } from "../controllers/product_controller.js";
+// import { productsSync } from "../controllers/product_controller.js";
+import { handleDfinWebhook } from "../controllers/dfin_controller.js";
 
 const router = Router();
 
-router.post("/products/sync", async (req, res) => {
-  await productsSync(req, res);
+// router.post("/products/sync", async (req, res) => {
+//   await productsSync(req, res);
+// });
+router.post("/webhook/dfinin", async (req, res) => {
+  console.log("Webhook  Route Called: BODY", req.body, "Headers:", req.headers);
+  await handleDfinWebhook(req, res);
 });
+
 router.use(errorHandler);
 
 export default router;

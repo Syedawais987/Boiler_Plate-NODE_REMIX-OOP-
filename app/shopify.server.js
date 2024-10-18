@@ -20,7 +20,7 @@ import {
   oauthCallback,
 } from "./server/middleware/oauthMiddleware.js";
 import cookieParser from "cookie-parser";
-import webhooksRoutes from "./server/routes/webhooksRoutes.js";
+// import webhooksRoutes from "./server/routes/webhooksRoutes.js";
 import apiRoutes from "./server/routes/apiRoutes.js";
 import proxyApiRoutes from "./server/routes/proxyApiRoutes.js";
 
@@ -127,8 +127,8 @@ app.get("/api/auth/callback", oauthCallback);
 
 // load app session
 app.use(loadSession);
-app.use("/api", webhooksRoutes);
-app.use("/api/app", apiRoutes);
+// app.use("/api", webhooksRoutes);
+app.use("/api", apiRoutes);
 app.use("/proxy/api", proxyApiRoutes);
 
 app.get("/", (req, res) => {
