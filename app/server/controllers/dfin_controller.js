@@ -128,8 +128,16 @@ class PaymentRequest {
       const response = await axios(config);
       return response.data;
     } catch (error) {
-      console.error("Error:", error);
-      throw new Error("Payment request failed");
+      console.error(
+        "Error response:",
+        error.response ? error.response.data : error.message
+      );
+
+      throw new Error(
+        `Payment request failed: ${
+          error.response ? JSON.stringify(error.response.data) : error.message
+        }`
+      );
     }
   }
 }
