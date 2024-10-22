@@ -5,7 +5,6 @@ import {
 } from "../graphql/order.mutation.js";
 import axios from "axios";
 import prisma from "../../db.server.js";
-import crypto from "crypto";
 
 export const dfin_pay = async (req, res) => {
   const { orderId, redirectUrl } = req.body;
@@ -143,84 +142,81 @@ class PaymentRequest {
 }
 
 export const handleDfinWebhook = async (req, res) => {
-  const hmacHeader = req.headers["x-dfin-signature"];
-  const rawBody = JSON.stringify(req.body);
-  const secret = process.env.DFIN_WEBHOOK_SECRET;
+  try {
+    const authHeader = req.headers["authorization"];
+    const secret = process.env.DFIN_WEBHOOK_SECRET;
 
-  const hash = crypto
-    .createHmac("sha256", secret)
-    .update(rawBody, "utf8")
-    .digest("hex");
+    if (authHeader !== secret) {
+      return res.status(401).json({ error: "Invalid authorization" });
+    }
 
-  if (hmacHeader !== hash) {
-    return res.status(401).json({ error: "Invalid signature" });
-  }
+    const { data, status, type } = req.body;
 
-  const { event, data } = req.body;
+    if (type === "save_payment.success" && status === "succeeded") {
+      const { metadata } = data;
 
-  if (event === "save_payment.success") {
-    try {
-      const { pay_id, payment_status } = data;
+      const orderMetadata = metadata && JSON.parse(metadata[0]);
 
-      if (payment_status === "success") {
-        const paymentMapping = await prisma.paymentMapping.findUnique({
-          where: { payId: pay_id },
+      if (!orderMetadata || !orderMetadata.order_id) {
+        return res
+          .status(400)
+          .json({ error: "Invalid metadata: No order_id found" });
+      }
+
+      const orderId = orderMetadata.order_id;
+      console.log("Order ID from metadata:", orderId);
+
+      const paymentMapping = await prisma.paymentMapping.findFirst({
+        where: { orderId },
+      });
+
+      if (!paymentMapping) {
+        return res.status(404).json({ error: "Payment mapping not found" });
+      }
+
+      const payId = paymentMapping.payId;
+
+      const session = req.shop.session;
+      if (!session) {
+        return res.status(401).json({ error: "No session found for the shop" });
+      }
+      const shopifyOrderId = orderId.split("/").pop();
+      const updateOrderResponse = await updateShopifyOrderFinancialStatus(
+        shopifyOrderId,
+        session
+      );
+
+      if (updateOrderResponse.errors) {
+        console.error(
+          "Error updating Shopify order:",
+          updateOrderResponse.errors
+        );
+        return res.status(409).json({
+          error: "Order already marked as PAID",
+        });
+      } else {
+        console.log("Shopify order financial status updated successfully");
+
+        await prisma.paymentMapping.update({
+          where: { payId },
+          data: { status: "paid" },
         });
 
-        if (!paymentMapping) {
-          return res.status(404).json({ error: "Payment mapping not found" });
-        }
-
-        const shopifyOrderId = paymentMapping.orderId.split("/").pop();
-        console.log(
-          "Shopify order id from DB against the pay id:",
-          shopifyOrderId
-        );
-
-        // const shop = process.env.SHOP;
-        // const session = await getSessionFromDB(shop);
-        const session = req.shop.session;
-
-        if (!session) {
-          return res
-            .status(401)
-            .json({ error: "No session found for the shop" });
-        }
-
-        const updateOrderResponse = await updateShopifyOrderFinancialStatus(
-          shopifyOrderId,
-          session
-        );
-
-        if (updateOrderResponse.errors) {
-          console.error(
-            "Error updating Shopify order:",
-            updateOrderResponse.errors
-          );
-          return res.status(500).json({
-            error: "Failed to update Shopify order financial status",
-          });
-        } else {
-          console.log("Shopify order financial status updated successfully");
-
-          await prisma.paymentMapping.update({
-            where: { payId: pay_id },
-            data: { status: "paid" },
-          });
-
-          return res
-            .status(200)
-            .json({ message: "Order financial status updated successfully" });
-        }
+        return res
+          .status(200)
+          .json({ message: "Order financial status updated successfully" });
       }
-    } catch (error) {
-      console.error("Error processing Dfin webhook:", error);
+    } else {
       return res
-        .status(500)
-        .json({ error: "Internal Server Error", details: error.message });
+        .status(400)
+        .json({ error: "Unsupported event type or status" });
     }
-  } else {
-    return res.status(400).json({ error: "Unsupported event type" });
+  } catch (error) {
+    console.error("Error processing Dfin webhook:", error);
+    return res.status(500).json({
+      error: "Internal Server Error",
+      details: error.message,
+    });
   }
 };
 
