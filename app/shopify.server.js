@@ -1,3 +1,5 @@
+import "dotenv/config";
+import "./logger.js";
 import "@shopify/shopify-app-remix/adapters/node";
 import {
   AppDistribution,
