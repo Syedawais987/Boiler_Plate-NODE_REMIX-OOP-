@@ -76,6 +76,7 @@ app.use(
     origin: [
       "https://muscled-tests.myshopify.com",
       "https://amplifiedamino.com",
+      "https://enhanced-amino-f8e98bc8c6ae.herokuapp.com",
       "https://admin.shopify.com",
       "https://b01b-203-82-53-3.ngrok-free.app",
     ],
@@ -89,6 +90,7 @@ app.options("*", (req, res) => {
   const allowedOrigins = [
     "https://muscled-tests.myshopify.com",
     "https://amplifiedamino.com",
+    "https://enhanced-amino-f8e98bc8c6ae.herokuapp.com",
     "https://admin.shopify.com",
     "https://b01b-203-82-53-3.ngrok-free.app",
   ];
