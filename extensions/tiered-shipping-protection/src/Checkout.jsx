@@ -18,7 +18,7 @@ function TieredShippingProtection() {
   const translate = useTranslate();
   const applyCartLinesChange = useApplyCartLinesChange();
   const cartLines = useCartLines();
-  const [isChecked, setIsChecked] = useState(false);
+  const [isChecked, setIsChecked] = useState(true);
   const [shippingProtectionVariantId, setShippingProtectionVariantId] =
     useState(null);
   const [protectionAmount, setProtectionAmount] = useState(0);
@@ -38,6 +38,10 @@ function TieredShippingProtection() {
       (line) => line.merchandise.id === variantId
     );
     setIsChecked(!!existingProtectionLine);
+
+    if (!existingProtectionLine && isChecked && variantId) {
+      addShippingProtection(applyCartLinesChange, variantId);
+    }
 
     cartLines.forEach((line) => {
       if (
@@ -79,7 +83,7 @@ function TieredShippingProtection() {
 
   return (
     <BlockStack>
-      <Banner title="Worry-Free Protection">
+      <Banner title="Shipping Protection">
         <Text>from damage, loss, and theft for ${protectionAmount}.</Text>
       </Banner>
       <Checkbox checked={isChecked} onChange={handleCheckboxChange}>
@@ -103,16 +107,16 @@ function calculateCartSubtotal(cartLines) {
 function calculateTierVariant(subtotal) {
   console.log("Calculating tier variant for subtotal:", subtotal);
   if (subtotal >= 0 && subtotal < 60) {
-    return "gid://shopify/ProductVariant/49611331961147";
+    return "gid://shopify/ProductVariant/46069606121689";
   }
   if (subtotal >= 60 && subtotal < 120) {
-    return "gid://shopify/ProductVariant/49611331993915";
+    return "gid://shopify/ProductVariant/46069606154457";
   }
   if (subtotal >= 120 && subtotal < 180) {
-    return "gid://shopify/ProductVariant/49611332026683";
+    return "gid://shopify/ProductVariant/46069606187225";
   }
   if (subtotal >= 180) {
-    return "gid://shopify/ProductVariant/49611332059451";
+    return "gid://shopify/ProductVariant/46069606219993";
   }
   return null;
 }
@@ -124,10 +128,10 @@ function getProtectionAmount(variantId) {
 
 function getProtectionAmounts() {
   return {
-    "gid://shopify/ProductVariant/49611331961147": 1.5,
-    "gid://shopify/ProductVariant/49611331993915": 2.5,
-    "gid://shopify/ProductVariant/49611332026683": 3.5,
-    "gid://shopify/ProductVariant/49611332059451": 4.5,
+    "gid://shopify/ProductVariant/46069606121689": 1.5,
+    "gid://shopify/ProductVariant/46069606154457": 2.5,
+    "gid://shopify/ProductVariant/46069606187225": 3.5,
+    "gid://shopify/ProductVariant/46069606219993": 4.5,
   };
 }
 
