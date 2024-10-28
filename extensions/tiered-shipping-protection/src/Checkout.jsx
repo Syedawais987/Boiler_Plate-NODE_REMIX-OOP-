@@ -33,6 +33,20 @@ function TieredShippingProtection() {
 
     setShippingProtectionVariantId(variantId);
     setProtectionAmount(getProtectionAmount(variantId));
+
+    const existingProtectionLine = cartLines.find(
+      (line) => line.merchandise.id === variantId
+    );
+    setIsChecked(!!existingProtectionLine);
+
+    cartLines.forEach((line) => {
+      if (
+        line.merchandise.id !== variantId &&
+        Object.keys(getProtectionAmounts()).includes(line.merchandise.id)
+      ) {
+        removeShippingProtection(applyCartLinesChange, line.id);
+      }
+    });
   }, [cartLines]);
 
   const handleCheckboxChange = async (checked) => {
@@ -48,13 +62,18 @@ function TieredShippingProtection() {
         applyCartLinesChange,
         shippingProtectionVariantId
       );
-    } else {
-      console.log("Removing shipping protection");
-      await removeShippingProtection(
-        applyCartLinesChange,
-        cartLines,
-        shippingProtectionVariantId
+    } else if (!checked) {
+      const protectionLine = cartLines.find(
+        (line) => line.merchandise.id === shippingProtectionVariantId
       );
+
+      if (protectionLine) {
+        console.log(
+          "Removing shipping protection with line ID:",
+          protectionLine.id
+        );
+        await removeShippingProtection(applyCartLinesChange, protectionLine.id);
+      }
     }
   };
 
@@ -95,18 +114,21 @@ function calculateTierVariant(subtotal) {
   if (subtotal >= 180) {
     return "gid://shopify/ProductVariant/49611332059451";
   }
-
   return null;
 }
 
 function getProtectionAmount(variantId) {
-  const protectionAmounts = {
+  const protectionAmounts = getProtectionAmounts();
+  return protectionAmounts[variantId] || 0;
+}
+
+function getProtectionAmounts() {
+  return {
     "gid://shopify/ProductVariant/49611331961147": 1.5,
     "gid://shopify/ProductVariant/49611331993915": 2.5,
     "gid://shopify/ProductVariant/49611332026683": 3.5,
     "gid://shopify/ProductVariant/49611332059451": 4.5,
   };
-  return protectionAmounts[variantId] || 0;
 }
 
 async function addShippingProtection(applyCartLinesChange, variantId) {
@@ -119,29 +141,12 @@ async function addShippingProtection(applyCartLinesChange, variantId) {
   console.log("Shipping protection added response:", response);
 }
 
-async function removeShippingProtection(
-  applyCartLinesChange,
-  cartLines,
-  shippingProtectionVariantId
-) {
-  console.log(
-    "Checking for existing shipping protection in cart lines:",
-    cartLines
-  );
-
-  const protectionLine = cartLines.find(
-    (line) => line.merchandise.id === shippingProtectionVariantId
-  );
-
-  if (protectionLine) {
-    console.log("Found protection line to remove, ID:", protectionLine.id);
-    const response = await applyCartLinesChange({
-      type: "removeCartLine",
-      id: protectionLine.id,
-      quantity: 1,
-    });
-    console.log("Shipping protection removed response:", response);
-  } else {
-    console.log("No shipping protection found to remove");
-  }
+async function removeShippingProtection(applyCartLinesChange, lineId) {
+  console.log("Removing shipping protection with line ID:", lineId);
+  const response = await applyCartLinesChange({
+    type: "removeCartLine",
+    id: lineId,
+    quantity: 1,
+  });
+  console.log("Shipping protection removed response:", response);
 }
