@@ -21,6 +21,7 @@ function TieredShippingProtection() {
   const [isChecked, setIsChecked] = useState(false);
   const [shippingProtectionVariantId, setShippingProtectionVariantId] =
     useState(null);
+  const [protectionAmount, setProtectionAmount] = useState(0);
 
   useEffect(() => {
     console.log("Running useEffect for cartLines change");
@@ -31,6 +32,7 @@ function TieredShippingProtection() {
     console.log("Determined shipping protection variant ID:", variantId);
 
     setShippingProtectionVariantId(variantId);
+    setProtectionAmount(getProtectionAmount(variantId));
   }, [cartLines]);
 
   const handleCheckboxChange = async (checked) => {
@@ -59,7 +61,7 @@ function TieredShippingProtection() {
   return (
     <BlockStack>
       <Banner title="Worry-Free Protection">
-        <Text>from damage, loss, and theft .</Text>
+        <Text>from damage, loss, and theft for ${protectionAmount}.</Text>
       </Banner>
       <Checkbox checked={isChecked} onChange={handleCheckboxChange}>
         {translate("Add Tiered Shipping Protection")}
@@ -97,6 +99,16 @@ function calculateTierVariant(subtotal) {
   return null;
 }
 
+function getProtectionAmount(variantId) {
+  const protectionAmounts = {
+    "gid://shopify/ProductVariant/49611331961147": 1.5,
+    "gid://shopify/ProductVariant/49611331993915": 2.5,
+    "gid://shopify/ProductVariant/49611332026683": 3.5,
+    "gid://shopify/ProductVariant/49611332059451": 4.5,
+  };
+  return protectionAmounts[variantId] || 0;
+}
+
 async function addShippingProtection(applyCartLinesChange, variantId) {
   console.log("Applying addCartLine change for variant ID:", variantId);
   const response = await applyCartLinesChange({
@@ -126,7 +138,7 @@ async function removeShippingProtection(
     const response = await applyCartLinesChange({
       type: "removeCartLine",
       id: protectionLine.id,
-      quantity: Number(1),
+      quantity: 1,
     });
     console.log("Shipping protection removed response:", response);
   } else {

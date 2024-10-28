@@ -76,7 +76,7 @@ app.use(cookieParser());
 app.use(
   cors({
     origin: [
-      "https://muscled-tests.myshopify.com",
+      "https://shipping987.myshopify.com",
       "https://amplifiedamino.com",
       "https://enhanced-amino-f8e98bc8c6ae.herokuapp.com",
       "https://admin.shopify.com",
@@ -90,7 +90,7 @@ app.options("*", (req, res) => {
   console.log("Received OPTIONS request from:", req.headers.origin);
   const origin = req.headers.origin;
   const allowedOrigins = [
-    "https://muscled-tests.myshopify.com",
+    "https://shipping987.myshopify.com",
     "https://amplifiedamino.com",
     "https://enhanced-amino-f8e98bc8c6ae.herokuapp.com",
     "https://admin.shopify.com",
