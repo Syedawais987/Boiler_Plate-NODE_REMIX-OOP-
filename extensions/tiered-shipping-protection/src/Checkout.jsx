@@ -121,7 +121,7 @@ function TieredShippingProtection() {
                 <Modal
                   id="my-modal"
                   padding
-                  title="Amplified Amino Shipping Protection Policy: Terms and Conditions"
+                  title="Shipping Protection Policy: Terms and Conditions"
                 >
                   <TextBlock>
                     <InlineStack padding="base">
@@ -129,13 +129,13 @@ function TieredShippingProtection() {
                     </InlineStack>
                   </TextBlock>
                   <TextBlock>
-                    For a small percentage of your total order amount, we
-                    provides optional shipping protection that covers the full
-                    value of your order against damage, loss, or theft during
-                    transit. This protection must be purchased at checkout and
-                    ensures that you are compensated or your products are
-                    replaced if any issues arise while your package is in
-                    transit.
+                    For a small percentage of your total order amount, Amplified
+                    Amino offers optional shipping protection that covers the
+                    full value of your order against damage, loss, or theft
+                    during transit. This protection must be purchased at
+                    checkout and guarantees that you will be compensated or your
+                    products replaced if any issues arise while your package is
+                    in transit.
                   </TextBlock>
 
                   {/* Claims and Replacement */}
@@ -151,13 +151,13 @@ function TieredShippingProtection() {
                     </InlineStack>
                   </TextBlock>
                   <TextBlock>
-                    Claim Filing Window: You may file a claim no later than 7
-                    days from when the package was delivered according to the
+                    Claim Filing Window: Claims must be filed within 7 days of
+                    the package being marked as delivered according to the
                     carrier's tracking information.
                   </TextBlock>
                   <TextBlock>
-                    Orders Over $100: For orders with a value over $100, a
-                    police report is required to process the claim.
+                    Orders Over $100: For orders valued over $100, a police
+                    report is required to process the claim.
                   </TextBlock>
 
                   <TextBlock>
@@ -166,17 +166,16 @@ function TieredShippingProtection() {
                     </InlineStack>
                   </TextBlock>
                   <TextBlock>
-                    Stuck in Transit: File claims no earlier than 10 days and no
-                    later than 30 days from the last update on the package's
-                    tracking information.
+                    Stuck in Transit: Claims for packages stuck in transit can
+                    be filed no earlier than 10 days and no later than 30 days
+                    from the last update on the package's tracking.
                   </TextBlock>
                   <TextBlock>
                     Delivered to Wrong Location: If the package is marked as
-                    delivered but was sent to the wrong location, you must file
-                    a claim within 7 days of the delivery date. Proof that the
-                    package was delivered to the incorrect address is required,
-                    such as photos, statements from the carrier, or other
-                    documentation.
+                    delivered but was sent to an incorrect address, a claim must
+                    be filed within 7 days of the delivery date. Proof of
+                    incorrect delivery is required, such as photos, carrier
+                    statements, or other documentation.
                   </TextBlock>
 
                   <TextBlock>
@@ -185,17 +184,16 @@ function TieredShippingProtection() {
                     </InlineStack>
                   </TextBlock>
                   <TextBlock>
-                    Claim Filing Window: File claims for damaged items with
-                    photos of the package and item (required) no later than 2
-                    days from when the package was delivered.
+                    Claim Filing Window: Claims for damaged items must be filed
+                    within 2 days of delivery and must include photos of both
+                    the package and the damaged item(s).
                   </TextBlock>
                   <TextBlock>
-                    Replacement Process: Upon verification of the issue,
-                    Amplified Amino will either replace the compromised products
-                    or offer a refund equivalent to the value of the affected
-                    goods, depending on availability. The replacement shipment
-                    may be sent using a different method than the original
-                    order.
+                    Replacement Process: Upon verification, Amplified Amino will
+                    replace the damaged products or issue a refund equivalent to
+                    the value of the affected goods, subject to product
+                    availability. Replacement shipments may be sent using an
+                    alternative shipping method.
                   </TextBlock>
 
                   <TextBlock>
@@ -204,8 +202,8 @@ function TieredShippingProtection() {
                     </InlineStack>
                   </TextBlock>
                   <TextBlock>
-                    Please note, all orders are documented and photographed
-                    prior to shipment to avoid fraudulent claims.
+                    All orders are documented and photographed prior to shipment
+                    to help prevent fraudulent claims.
                   </TextBlock>
 
                   <TextBlock>
@@ -215,8 +213,9 @@ function TieredShippingProtection() {
                   </TextBlock>
                   <TextBlock>
                     Force Majeure: Amplified Amino is not liable for delays or
-                    damage caused by events beyond our control, including
-                    natural disasters, acts of terrorism, or government actions.
+                    damage caused by events beyond our control, including but
+                    not limited to natural disasters, acts of terrorism, or
+                    government actions.
                   </TextBlock>
 
                   <TextBlock>
