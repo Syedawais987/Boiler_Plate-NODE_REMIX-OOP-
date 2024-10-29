@@ -284,10 +284,10 @@ function getProtectionAmount(variantId) {
 
 function getProtectionAmounts() {
   return {
-    "gid://shopify/ProductVariant/49611331961147": 1.5,
-    "gid://shopify/ProductVariant/49611331993915": 2.5,
-    "gid://shopify/ProductVariant/49611332026683": 3.5,
-    "gid://shopify/ProductVariant/49611332059451": 4.5,
+    "gid://shopify/ProductVariant/49611331961147": "1.50",
+    "gid://shopify/ProductVariant/49611331993915": "2.50",
+    "gid://shopify/ProductVariant/49611332026683": "3.50",
+    "gid://shopify/ProductVariant/49611332059451": "4.50",
   };
 }
 
