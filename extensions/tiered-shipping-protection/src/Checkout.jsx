@@ -228,7 +228,9 @@ function TieredShippingProtection() {
           <Text size="base" appearance="subdued">
             from damage, loss, and theft for
           </Text>
-          <Heading> ${protectionAmount}</Heading>
+          <Text size="base" fontWeight="bold">
+            ${protectionAmount}{" "}
+          </Text>
         </InlineStack>
       </View>
     </InlineStack>
