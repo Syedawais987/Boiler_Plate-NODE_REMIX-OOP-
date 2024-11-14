@@ -88,15 +88,15 @@ class ProductService {
         throw new Error("Product not found");
       }
   
-      // Format the response as desired
+     
       const formattedProduct = {
-        id: product.id, // Changed from productNode to product
-        handle: product.handle, // Changed from productNode to product
-        title: product.title, // Changed from productNode to product
-        description: product.description || "", // Ensure there's always a description
-        price: product.priceRange?.minVariantPrice?.amount || "No price", // Default to "No price" if not available
-        imageUrl: product.images?.edges[0]?.node?.url || "", // Default to empty string if no image
-        active: true, // Assuming product is active by default
+        id: product.id, 
+        handle: product.handle, 
+        title: product.title, 
+        description: product.description || "", 
+        price: product.priceRange?.minVariantPrice?.amount || "No price",
+        imageUrl: product.images?.edges[0]?.node?.url || "", 
+        active: true, 
         variants: product.variants.edges.map((variantEdge) => {
           const variant = variantEdge.node;
           const options = variant.selectedOptions
@@ -105,10 +105,10 @@ class ProductService {
   
           return {
             id: variant.id,
-            sku: variant.sku || "No SKU", // Default to "No SKU" if not available
+            sku: variant.sku || "No SKU",
             price:
-              variant.presentmentPrices.edges[0]?.node.price.amount || "No price", // Default to "No price" if not available
-            options: options || "No options", // Default to "No options" if not available
+              variant.presentmentPrices.edges[0]?.node.price.amount || "No price", 
+            options: options || "No options", 
           };
         }),
       };
