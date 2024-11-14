@@ -57,46 +57,7 @@ class ProductService {
     }
   }
 
-  async deleteProduct(productId) {
-    console.log("Delete request for product ID:", productId);
-
-    if (!productId) {
-      console.error("No product ID provided");
-      throw new Error("Product ID is required");
-    }
-
-    try {
-      const response = await shopify_graphql({
-        session: this.session,
-        query: ProductMutations.deleteProductMutation(),
-        variables: {
-          input: {
-            id: productId,
-          },
-        },
-      });
-
-      console.log("Shopify response:", response);
-
-      if (response.errors) {
-        console.error("Error from Shopify:", response.errors);
-        throw new Error("Error deleting product");
-      }
-
-      const { deletedProductId, userErrors } = response.data.productDelete;
-
-      if (userErrors.length > 0) {
-        console.error("User errors:", userErrors);
-        throw new Error(`User errors: ${JSON.stringify(userErrors)}`);
-      }
-
-      return { deletedProductId };
-    } catch (error) {
-      console.error("Failed to delete product:", error);
-      throw new Error("Internal Server Error");
-    }
-  }
-
+  
   async getProductById(req) {
     let { id } = req.params;
   
