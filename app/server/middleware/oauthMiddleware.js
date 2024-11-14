@@ -34,6 +34,7 @@ const registerWebhooks = async ({ session, webhookData }) => {
 
 export const authorize = async (req, res) => {
   const shop = req.query.shop;
+  console.log("SHOP:",shop)
 
   const stateExpire = req.cookies["state_expire"];
 
